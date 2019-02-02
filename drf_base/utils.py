@@ -30,14 +30,6 @@ def st(path, value):
     return dict_return
 
 
-def get_party(data, role):
-    for party in gt(data, 'parties', []):
-        if role in gt(party, 'roles', []):
-            return party
-
-    return None
-
-
 def get_object_labels(obj, names=None):
     labels = []
     iterate = []
@@ -58,23 +50,6 @@ def get_object_labels(obj, names=None):
             labels = labels + get_object_labels(value)
 
     return labels
-
-
-def sync_objects(instance, function):
-    skip = 0
-    select = 50
-    while True:
-        objects = list(instance[skip:skip + select])
-
-        print('INDEX: ', len(objects))
-        if len(objects) == 0:
-            break
-
-        skip += select
-
-        for object in objects:
-            print('SYNC ' + str(object.pk))
-            function(object)
 
 
 def offset_objects(key, get_function, save_function, storage):
