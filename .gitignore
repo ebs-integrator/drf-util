@@ -1,0 +1,12 @@
+*.swp
+*~
+*.pyc
+/.coverage
+/.eggs/
+/.idea/
+/.tox/
+/build/
+/dist/
+*.egg-info/
+/docs/_build/
+/venv/
