@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Manager
 from django.utils import timezone
 
-from common.managers import NoDeleteManager
+from drf_base.managers import NoDeleteManager
 from django.conf import settings
 
 # getting user model (Custom or Default)
