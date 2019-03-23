@@ -1,7 +1,7 @@
 from functools import wraps
 from rest_framework.request import Request
 
-from drf_base.exceptions import ValidationException
+from drf_utils.exceptions import ValidationException
 
 
 def serialize_decorator(serializer_method, preview_function=None, read_params=False):

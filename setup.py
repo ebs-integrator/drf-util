@@ -3,14 +3,14 @@
 from setuptools import setup
 
 setup(
-    name='drf_base',
-    version='0.0.2',
+    name='drf_utils',
+    version='0.0.3',
     description='Django Rest Framework Utils',
     author='EBS',
     author_email='office@ebs-integrator.com',
-    url='https://git2.devebs.net/ebs-platform/drf-base',
+    url='https://git2.devebs.net/ebs-platform/drf-utils',
     packages=[
-        'drf_base',
+        'drf_utils',
     ],
     include_package_data=True,
     zip_safe=False,

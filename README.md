@@ -4,7 +4,7 @@ A set of util functions used in EBS Projects
 
 ### Install:
 ```bash
-pip install git+https://git2.devebs.net/ebs-platform/drf-base.git
+pip install git+https://git2.devebs.net/ebs-platform/drf-utils.git
 ```
 
 ### Functions
