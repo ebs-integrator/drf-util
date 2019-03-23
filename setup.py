@@ -40,6 +40,7 @@ setup(
         'Django>=1.11',
         'djangorestframework',
         'python-dateutil',
+        'elasticsearch',
     ],
     license='BSD',
 )

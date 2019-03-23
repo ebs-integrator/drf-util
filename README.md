@@ -117,6 +117,79 @@ class RestoreUserPassword(GenericAPIView):
 
 ### Validators
 
-- ObjectExistValidator
-- ObjectUniqueValidator
-- PhoneValidator
+- ObjectExistValidator - check if object exists
+- ObjectUniqueValidator - check if object not exists
+- PhoneValidator - check phone
+
+### Serializers
+
+#### ElasticFilterSerializer - make easy conversion between serializer data and elastic filters
+
+```python
+class TenderFilterSerializer(PaginatorSerializer, ElasticFilterSerializer):
+    sort_criteria = [{"date_updated": {"order": "desc"}}, "_score"]
+
+    status = StringListField(required=False)
+    date_start = serializers.DateField(required=False)
+    date_end = serializers.DateField(required=False)
+
+    def filter_status(self, value):
+        return {'terms': {
+            'search_status.keyword': value
+        }}
+
+    def filter_date_start(self, value):
+        return {
+            "range": {
+                "tenderPeriod.startDate": {'gte': value}
+            }
+        }
+
+    def filter_date_end(self, value):
+        return {
+            "range": {
+                "tenderPeriod.startDate": {'lte': value}
+            }
+        }
+
+class TenderListView(GenericAPIView):
+    @serialize_decorator(TenderFilterSerializer)
+    def get(self, request, *args, **kwargs):
+        return Response(es_app.search_response(request.serializer, 'tenders_index'))
+```
+
+#### ChangebleSerializer - metamorphic serializer
+
+```
+class ContractNoticeCancelView(GenericAPIView):
+    def put(self, request):
+        serializer_meta = {
+            'id': PrimaryKeyRelatedField(queryset=Tender.objects.all(), required=True),
+            'info': {
+                'rationale': CharField(required=True),
+                'description': CharField(required=True),
+            },
+            'documents': DocumentFileSerializer(required=True, many=True)
+        }
+        serializer = ChangebleSerializer(data=request.data)
+        serializer.update_properties(serializer_meta)
+        serializer.is_valid(raise_exception=True)
+
+        return Response({"valid": True})
+```
+
+#### PaginatorSerializer - serializer for paginating
+
+```python
+class ListUserNotification(GenericAPIView):
+    @serialize_decorator(PaginatorSerializer)
+    def get(self, request):
+        notifications = NotificationEvent.objects.filter(user=request.user)
+        return request.serializer.response(notifications, serializer=ListNotificationSerializer)
+```
+
+#### Another serializers
+
+- StringListField - simple string list of chars
+- EmptySerializer - simple empty serializer
+- IdSerializer - simple id serializer
