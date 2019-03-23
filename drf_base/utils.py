@@ -2,6 +2,25 @@ from dateutil import parser
 from django.db.models.base import Model
 
 
+def dict_merge(a, b, path=None):
+    if path is None: path = []
+
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                dict_merge(a[key], b[key], path + [str(key)])
+            elif a[key] == b[key]:
+                pass  # same leaf value
+            else:
+                pass
+                # a[key] = b[key]
+                # raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+            
+    return a
+
+
 def gt(obj, path, default=None):
     try:
         parts = path.split('.')
@@ -18,6 +37,17 @@ def gt(obj, path, default=None):
 
     except Exception:
         return default
+
+
+def sf(function, exception=Exception):
+    try:
+        return function()
+    except exception:
+        pass
+
+
+def join_url(part_one: str, part_two: str):
+    return '/'.join([part_one.rstrip('/'), part_two.lstrip('/')])
 
 
 def st(path, value):
@@ -49,7 +79,21 @@ def get_object_labels(obj, names=None):
         else:
             labels = labels + get_object_labels(value)
 
-    return labels
+    return list(set(labels))
+
+
+def fetch_objects(instance, function, select=50):
+    skip = 0
+    while True:
+        objects = list(instance[skip:skip + select])
+
+        if len(objects) == 0:
+            break
+
+        skip += select
+
+        for object in objects:
+            function(object)
 
 
 def offset_objects(key, get_function, save_function, storage):

@@ -1,6 +1,7 @@
 from functools import wraps
-from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
+
+from drf_base.exceptions import ValidationException
 
 
 def serialize_decorator(serializer_method, preview_function=None, read_params=False):
@@ -19,14 +20,14 @@ def serialize_decorator(serializer_method, preview_function=None, read_params=Fa
                 data = preview_function(data)
 
             # serialize data
-            serializer = serializer_method(data=data)
+            serializer = serializer_method(data=data, context={"request": request})
             if serializer.is_valid():
                 request.valid = serializer.validated_data
                 request.serializer = serializer
                 return view_func(*args, **kwargs)
 
             # if data not is valid
-            raise ValidationError(serializer.errors)
+            raise ValidationException(serializer.errors)
 
         return wraps(view_func)(_decorator)
 
