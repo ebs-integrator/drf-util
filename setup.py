@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='drf_utils',
-    version='0.0.3',
+    version='0.0.4',
     description='Django Rest Framework Utils',
     author='EBS',
     author_email='office@ebs-integrator.com',
