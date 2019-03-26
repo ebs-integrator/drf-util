@@ -16,7 +16,7 @@ class ElasticUtil(object):
 
     def build_index_names(self, prefix=None):
         self.known_indexes = []
-        for key, value in ElasticUtil.__dict__.items():
+        for key, value in self.__class__.__dict__.items():
             if key.endswith('_index') and isinstance(key, str):
                 if prefix and not value.contains(prefix):
                     index_name = self.index_prefix + '_' + prefix + value
