@@ -4,7 +4,7 @@ A set of util functions used in EBS Projects
 
 ### Install:
 ```bash
-pip install git+https://git2.devebs.net/ebs-platform/drf-utils.git
+pip install drf_util
 ```
 
 ### Functions
@@ -160,7 +160,7 @@ class TenderListView(GenericAPIView):
 
 #### ChangebleSerializer - metamorphic serializer
 
-```
+```python
 class ContractNoticeCancelView(GenericAPIView):
     def put(self, request):
         serializer_meta = {

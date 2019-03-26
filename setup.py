@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='drf_util',
-    version='0.0.5',
+    version='0.0.7',
     description='Django Rest Framework Utils',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author='EBS Integrator',
     author_email='office@ebs-integrator.com',
     url='https://github.com/EnterpriseBusinessSolutions/drf-util',
