@@ -3,14 +3,14 @@
 from setuptools import setup
 
 setup(
-    name='drf_utils',
+    name='drf_util',
     version='0.0.5',
     description='Django Rest Framework Utils',
     author='EBS Integrator',
     author_email='office@ebs-integrator.com',
-    url='https://github.com/EnterpriseBusinessSolutions/drf-utils',
+    url='https://github.com/EnterpriseBusinessSolutions/drf-util',
     packages=[
-        'drf_utils',
+        'drf_util',
     ],
     include_package_data=True,
     zip_safe=False,

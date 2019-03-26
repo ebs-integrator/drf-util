@@ -1,4 +1,3 @@
-import os
 from django.core.exceptions import ValidationError
 
 DEFAULT_FIELD = "pk"

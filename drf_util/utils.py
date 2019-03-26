@@ -17,7 +17,7 @@ def dict_merge(a, b, path=None):
                 # raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
         else:
             a[key] = b[key]
-            
+
     return a
 
 
@@ -92,8 +92,8 @@ def fetch_objects(instance, function, select=50):
 
         skip += select
 
-        for object in objects:
-            function(object)
+        for obj in objects:
+            function(obj)
 
 
 def offset_objects(key, get_function, save_function, storage):

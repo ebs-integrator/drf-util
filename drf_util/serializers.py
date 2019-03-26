@@ -4,8 +4,8 @@ from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.response import Response
 
-from drf_utils.exceptions import ValidationException
-from drf_utils.utils import any_value
+from drf_util.exceptions import ValidationException
+from drf_util.utils import any_value
 
 
 class ElasticFilterSerializer(serializers.Serializer):
@@ -16,14 +16,14 @@ class ElasticFilterSerializer(serializers.Serializer):
         self.default_filters = filters
 
     def get_filter(self):
-        filter = self.default_filters.copy()
+        es_filter = self.default_filters.copy()
         fields = self.get_fields()
         for field_name, field_instance in fields.items():
             call_attribute = 'filter_' + field_name
             if field_name in self.validated_data and hasattr(self, call_attribute):
                 field_filter = getattr(self, call_attribute)(self.validated_data[field_name])
-                filter.append(field_filter)
-        return filter
+                es_filter.append(field_filter)
+        return es_filter
 
     def get_fetched(self, results):
         for result in results:
