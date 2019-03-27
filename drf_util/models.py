@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -5,7 +6,6 @@ from django.db.models import Manager
 from django.utils import timezone
 
 from drf_util.managers import NoDeleteManager
-from django.conf import settings
 
 # getting user model (Custom or Default)
 User = get_user_model()
@@ -15,10 +15,13 @@ User = get_user_model()
 # Common models
 # ======================================================================================================================
 def get_default_languages():
-    return settings.DICT_LANG
+    return settings.get('DICT_LANG', {'en': None})
 
 
-def get_lang_value(dict_data, lang: settings.DEFAULT_LANG):
+def get_lang_value(dict_data, lang=None):
+    if lang is None:
+        lang = settings.get('DEFAULT_LANG', 'en')
+
     return dict_data.get(lang, None)
 
 
@@ -89,7 +92,7 @@ class AbstractJsonModel(models.Model):
             self.save()
         return self
 
-    def get_lang(self, lang=settings.DEFAULT_LANG):
+    def get_lang(self, lang=None):
         return get_lang_value(self.languages, lang)
 
     def translate(self, lang):
@@ -97,4 +100,3 @@ class AbstractJsonModel(models.Model):
 
     class Meta:
         abstract = True
-

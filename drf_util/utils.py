@@ -77,7 +77,7 @@ def get_object_labels(obj, names=None):
             else:
                 labels.append(value)
         else:
-            labels = labels + get_object_labels(value)
+            labels = labels + get_object_labels(value, names)
 
     return list(set(labels))
 

@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = drf_util
+
+[report]
+exclude_lines =
+    pragma: no cover

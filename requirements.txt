@@ -1,0 +1,12 @@
+Django
+djangorestframework
+python-dateutil
+elasticsearch
+
+
+psycopg2==2.7.6.1
+psycopg2-binary==2.7.6.1
+
+# Testing
+tox
+coverage
