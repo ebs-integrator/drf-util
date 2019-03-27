@@ -1,3 +1,5 @@
+import copy
+
 from django.core.paginator import Paginator, EmptyPage
 from django.utils.translation import gettext as _
 from rest_framework import serializers
@@ -102,6 +104,17 @@ class PaginatorSerializer(serializers.Serializer):
     per_page = serializers.IntegerField(default=50, min_value=1, required=False)
 
     default_per_page = 50
+
+    pagination_remove_fields = ['page', 'per_page']
+
+    def get_original_fields(self):
+        data = copy.deepcopy(self.validated_data)
+        for remove_field_key in self.pagination_remove_fields:
+            try:
+                del data[remove_field_key]
+            except KeyError:
+                pass
+        return data
 
     def get_default_per_page(self):
         return self.data.get('per_page', self.default_per_page)
