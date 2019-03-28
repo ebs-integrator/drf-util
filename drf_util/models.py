@@ -15,12 +15,12 @@ User = get_user_model()
 # Common models
 # ======================================================================================================================
 def get_default_languages():
-    return settings.get('DICT_LANG', {'en': None})
+    return getattr(settings, 'DICT_LANG', {'en': None})
 
 
 def get_lang_value(dict_data, lang=None):
     if lang is None:
-        lang = settings.get('DEFAULT_LANG', 'en')
+        lang = getattr(settings, 'DEFAULT_LANG', 'en')
 
     return dict_data.get(lang, None)
 
