@@ -1,6 +1,6 @@
 from dateutil import parser
 from django.db.models.base import Model
-
+from django.conf import settings
 
 def dict_merge(a, b, path=None):
     if path is None: path = []
@@ -111,7 +111,7 @@ def offset_objects(key, get_function, save_function, storage):
 
 def date(item):
     try:
-        return parser.parse(item)
+        return parser.parse(item, ignoretz=not getattr(settings, 'USE_TZ', False))
     except TypeError:
         return None
 
@@ -119,7 +119,7 @@ def date(item):
 def to_dt(items):
     for k, item in enumerate(items):
         if item:
-            items[k] = parser.parse(item)
+            items[k] = parser.parse(item, ignoretz=not getattr(settings, 'USE_TZ', False))
 
     return items
 

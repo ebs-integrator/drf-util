@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 
 from drf_util import utils
@@ -43,3 +45,12 @@ class UtilsTests(TestCase):
     def test_min_next(self):
         items = [4,6,1]
         self.assertEqual(utils.min_next(items, 2), 4)
+
+    def test_date(self):
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').year, 2019)
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').month, 3)
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').day, 18)
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').hour, 9)
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').minute, 28)
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').second, 29)
+        self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').microsecond, 540898)
