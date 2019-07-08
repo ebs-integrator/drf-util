@@ -70,7 +70,8 @@ class ChangebleSerializer(serializers.Serializer):
     def update_properties(self, data):
         for key, value in data.items():
             if isinstance(value, Field):
-                if key in self.fields:
+                # if it's a custom Filed Class, then need to ignore default Field Class
+                if key in self.fields and isinstance(value, Fld):
                     self.fields[key].required = value.required
                     if value.validators:
                         self.fields[key].validators = value.validators
