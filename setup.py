@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='drf_util',
-    version='0.0.11',
+    version='0.0.13',
     description='Django Rest Framework Utils',
     long_description=long_description,
     long_description_content_type="text/markdown",

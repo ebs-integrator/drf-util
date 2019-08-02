@@ -18,7 +18,7 @@ class ElasticUtil(object):
         self.known_indexes = []
         for key, value in self.__class__.__dict__.items():
             if key.endswith('_index') and isinstance(key, str):
-                if prefix and not value.contains(prefix):
+                if prefix and not prefix in value:
                     index_name = self.index_prefix + '_' + prefix + value
                 else:
                     index_name = self.index_prefix + '_' + value
@@ -60,13 +60,13 @@ class ElasticUtil(object):
     def delete_test_indexes(self):
         self.session.indices.delete(index=self.index_prefix + "_test_*")
 
-    def get_source(self, hit):
+    def get_source(self, hit, context=None):
         source = hit['_source']
         if 'labels' in source:
             del source['labels']
         return source
 
-    def search_response(self, serializer, index, prepare_function=None):
+    def search_response(self, serializer, index, prepare_function=None, context=None):
         size = serializer.get_default_per_page()
         skip = serializer.get_skip()
 
@@ -84,10 +84,12 @@ class ElasticUtil(object):
         if prepare_function is None:
             prepare_function = self.get_source
 
-        results = map(prepare_function, results)
+        prepared_results = []
+        for result in results:
+            prepared_results.append(prepare_function(result, context))
 
         return {
-            'data': serializer.get_fetched(list(results)),
+            'data': serializer.get_fetched(prepared_results),
             'total_results': count if count < self.max_result_window else self.max_result_window,
             'total': count,
             'per_page': serializer.get_default_per_page(),
