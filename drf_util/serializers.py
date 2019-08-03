@@ -157,3 +157,12 @@ class PaginatorSerializer(serializers.Serializer):
 
 class StringListField(serializers.ListField):
     child = serializers.CharField()
+
+
+class FilterSerializer(serializers.Serializer):
+    def get_filter(self, data, queryset):
+        for key, value in data.items():
+            call_attribute = 'filter_' + key
+            if key in self.validated_data and hasattr(self, call_attribute):
+                queryset = getattr(self, call_attribute)(value, queryset)
+        return queryset
