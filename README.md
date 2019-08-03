@@ -158,6 +158,39 @@ class TenderListView(GenericAPIView):
         return Response(es_app.search_response(request.serializer, 'tenders_index'))
 ```
 
+#### FilterSerializer - filter queryset by serializer fields
+
+```python
+class ServiceListQuerySerializer(FilterSerializer):
+    name = CharField(required=False)
+    tag_id = CharField(required=False)
+    type = CharField(required=False)
+    status = CharField(required=False)
+
+    def filter_name(self, value, queryset):
+        return queryset.filter(name__icontains=value)
+
+    def filter_tag_id(self, value, queryset):
+        return queryset.filter(tags__contains=value)
+
+    def filter_type(self, value, queryset):
+        return queryset.filter(type=value)
+
+    def filter_status(self, value, queryset):
+        return queryset.filter(status=value)
+
+
+class ServiceListView(ListAPIView):
+    serializer_class = ServiceListQuerySerializer
+
+    @swagger_auto_schema(query_serializer=ServiceListQuerySerializer)
+    @serialize_decorator(ServiceListQuerySerializer)
+    def get(self, request):
+        services = request.serializer.get_filter(request.valid, Service.objects.all())
+        return Response(ServiceSerializer(instance=services, many=True).data)
+```
+
+
 #### ChangebleSerializer - metamorphic serializer
 
 ```python
