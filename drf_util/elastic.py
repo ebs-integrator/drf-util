@@ -27,7 +27,6 @@ class ElasticUtil(object):
                 self.known_indexes.append(index_name)
 
     def search(self, index, body, doc_type=None):
-        print('SEARCH:', body)
         response = self.session.search(index=index, doc_type=doc_type if doc_type else index, body=body)
         return response['hits']['hits'], response['hits']['total']
 
@@ -66,7 +65,7 @@ class ElasticUtil(object):
             del source['labels']
         return source
 
-    def search_response(self, serializer, index, prepare_function=None, context=None):
+    def search_response(self, serializer, index, prepare_function=None, context=None, query=None):
         size = serializer.get_default_per_page()
         skip = serializer.get_skip()
 
@@ -74,11 +73,12 @@ class ElasticUtil(object):
             raise ValidationError({
                 'page': [_('Result window must be less than or equal to %s') % self.max_result_window]
             })
+
         results, count = self.search(index, {
             "from": skip,
             "size": size,
             "sort": serializer.sort_criteria,
-            "query": {"bool": {"must": serializer.get_filter()}}
+            "query": {"bool": query} if query else {"bool": {"must": serializer.get_filter()}}
         })
 
         if prepare_function is None:
