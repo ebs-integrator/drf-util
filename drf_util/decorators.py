@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from drf_util.exceptions import ValidationException
 
 
-def serialize_decorator(serializer_method, preview_function=None, read_params=False):
+def serialize_decorator(serializer_method, preview_function=None, read_params=False, partial=False):
     def _new_decorator(view_func):
         def _decorator(*args, **kwargs):
             request = next(filter(lambda arg: isinstance(arg, Request), args))
@@ -20,7 +20,7 @@ def serialize_decorator(serializer_method, preview_function=None, read_params=Fa
                 data = preview_function(data)
 
             # serialize data
-            serializer = serializer_method(data=data, context={"request": request})
+            serializer = serializer_method(data=data, partial=partial, context={"request": request})
             if serializer.is_valid():
                 request.valid = serializer.validated_data
                 request.serializer = serializer
