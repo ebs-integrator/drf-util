@@ -10,8 +10,8 @@ class ElasticUtil(object):
     max_result_window = 10000
     known_indexes = []
 
-    def __init__(self):
-        self.session = Elasticsearch(hosts=self.hosts, timeout=50)
+    def __init__(self, **kwargs):
+        self.session = Elasticsearch(hosts=self.hosts, timeout=50, **kwargs)
         self.build_index_names()
 
     def build_index_names(self, prefix=None):
