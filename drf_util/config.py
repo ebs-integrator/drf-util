@@ -3,7 +3,7 @@ import os
 from django.core.exceptions import ImproperlyConfigured
 
 
-def default_logging(DEBUG_LEVEL='info'):
+def default_logging(DEBUG_LEVEL='INFO'):
     return {
         'version': 1,
         'disable_existing_loggers': True,
