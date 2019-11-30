@@ -7,6 +7,8 @@ services:
 
 pypi:
   stage: pypi
+  image:
+    name: python:3.7-slim-stretch
   script:
     - pip install twine
     - rm -rf dist
