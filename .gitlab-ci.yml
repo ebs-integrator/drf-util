@@ -6,7 +6,7 @@ services:
   - docker:dind
 
 pypi:
-  stage: upload
+  stage: pypi
   script:
     - pip install twine
     - rm -rf dist
