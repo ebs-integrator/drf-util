@@ -17,9 +17,9 @@ pypi:
     - echo "    nexus" >> ~/.pypirc
     - echo "" >> ~/.pypirc
     - echo "[nexus]" >> ~/.pypirc
-    - echo "repository: ${PYPI_REPO}" >> ~/.pypirc
-    - echo "username: ${PYPI_USER}" >> ~/.pypirc
-    - echo "password: ${PYPI_PASSWORD}" >> ~/.pypirc
+    - echo "repository:${PYPI_REPO}" >> ~/.pypirc
+    - echo "username:${PYPI_USER}" >> ~/.pypirc
+    - echo "password:${PYPI_PASSWORD}" >> ~/.pypirc
     - python3 setup.py check sdist bdist
     - python setup.py sdist bdist_wheel
     - twine upload -r nexus dist/*.tar.gz
