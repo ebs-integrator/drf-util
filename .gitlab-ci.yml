@@ -8,16 +8,16 @@ services:
 pypi:
   stage: upload
   script:
-  - pip install twine
-  - rm -rf dist
-  - echo "[distutils]" >> ~/.pypirc
-  - echo "index-servers =" >> ~/.pypirc
-  - echo "    nexus" >> ~/.pypirc
-  - echo "" >> ~/.pypirc
-  - echo "[nexus]" >> ~/.pypirc
-  - echo "${PYPI_REPO}" >> ~/.pypirc
-  - echo "${PYPI_USER}" >> ~/.pypirc
-  - echo "${PYPI_PASSWORD}" >> ~/.pypirc
-  - python3 setup.py check sdist bdist
-  - python setup.py sdist bdist_wheel
-  - twine upload -r nexus dist/*.tar.gz
+    - pip install twine
+    - rm -rf dist
+    - echo "[distutils]" >> ~/.pypirc
+    - echo "index-servers =" >> ~/.pypirc
+    - echo "    nexus" >> ~/.pypirc
+    - echo "" >> ~/.pypirc
+    - echo "[nexus]" >> ~/.pypirc
+    - echo "${PYPI_REPO}" >> ~/.pypirc
+    - echo "${PYPI_USER}" >> ~/.pypirc
+    - echo "${PYPI_PASSWORD}" >> ~/.pypirc
+    - python3 setup.py check sdist bdist
+    - python setup.py sdist bdist_wheel
+    - twine upload -r nexus dist/*.tar.gz
