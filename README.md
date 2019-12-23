@@ -14,7 +14,7 @@ pip install drf_util
 Definition:
 
 ```python
-gt(obj, path, default=None)
+gt(obj, path, default=None,sep='.')
 ```
 
 Usage:

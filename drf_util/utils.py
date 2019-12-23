@@ -1,3 +1,5 @@
+from itertools import repeat
+
 from dateutil import parser
 from django.db.models.base import Model
 from django.conf import settings
@@ -21,12 +23,23 @@ def dict_merge(a, b, path=None):
     return a
 
 
-def gt(obj, path, default=None):
+def gt(obj, path, default=None, sep='.'):
+    """
+    Function that extracts the value from the specified path in obj and returns default if nothing found
+    :param obj: Parameter in which we are searching for values in
+    :param path: Path we are trying to search for in our obj
+    :param default: Default value we return if nothing found in that path
+    :param sep: Separator used between path values
+    :return: Value in obj path if it exists or default value
+    """
     try:
-        parts = path.split('.')
-
-        for part in parts:
-            if part.isdigit():
+        parts = path.split(sep)
+        all_key = "*"
+        for nr, part in enumerate(parts):
+            if part is all_key:
+                path = path.split(all_key + sep)[-1]  # If you use all_key we split by it and sep and get last value
+                return list(map(gt, obj, repeat(path)))
+            elif part.isdigit():
                 obj = obj[int(part)]
             elif isinstance(obj, Model):
                 obj = getattr(obj, part, default)
@@ -133,6 +146,12 @@ def min_next(items, min_value=None):
 
 
 def any_value(items: list):
+    """
+    Function that extracts values from a list and checks if they are diff from None,0,{},[],False...
+    First value that is diff from them is being returned
+    :param items: List of items that is searched for non-null values
+    :return: First value that fits the criteria
+    """
     for item in items:
         if item:
             return item
