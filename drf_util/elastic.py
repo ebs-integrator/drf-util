@@ -118,7 +118,8 @@ class ElasticUtil(object):
                     list_return += obj.values()
                 else:
                     list_return.append(obj)
-            return " ".join(set(filter(None, list_return)))
+            text = " ".join(set(filter(None, list_return)))
+            return text.lower()
 
         searches = {"first_search": first_search, "second_search": second_search, "third_search": third_search}
         for key, values in searches.items():
@@ -145,12 +146,21 @@ class ElasticUtil(object):
             type_of_query = "simple_query_string"
         else:
             type_of_query = "query_string"
-        return {
-            type_of_query: {
-                "query": prepare_query_name(data),
-                "fields": [
-                    "first_search^9",
-                    "second_search^3",
-                    "third_search^1"
-                ], **additional_params
-            }}
+        value = data.lower()
+        query = {
+            "bool":
+                {"should": [
+                    {"prefix": {
+                        "first_search.keyword": value
+                    }},
+                    {type_of_query: {
+                        "query": prepare_query_name(value),
+                        "fields": [
+                            "first_search^0.5",
+                            "second_search^0.2",
+                            "third_search^0.1"
+                        ], **additional_params
+                    }}
+                ]}
+        }
+        return query
