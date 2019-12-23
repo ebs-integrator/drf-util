@@ -120,20 +120,13 @@ class ElasticUtil(object):
                     list_return.append(obj)
             return " ".join(set(filter(None, list_return)))
 
-        searches = [first_search, second_search, third_search]
-        for values in searches:
+        searches = {"first_search": first_search, "second_search": second_search, "third_search": third_search}
+        for key, values in searches.items():
             fields = []
             for item in values:
                 fields.append(prepare_search(gt(data, item)))
-            if values == first_search:
-                first_search = {"first_search": prepare_search(fields)}
-                data.update(first_search)
-            elif values == second_search:
-                second_search = {"second_search": prepare_search(fields)}
-                data.update(second_search)
-            else:
-                third_search = {"third_search": prepare_search(fields)}
-                data.update(third_search)
+            search = {key: prepare_search(fields)}
+            data.update(search)
 
     @staticmethod
     def triple_search_query(data: str, use_simple=False, additional_params={}):
