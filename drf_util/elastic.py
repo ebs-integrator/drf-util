@@ -121,7 +121,7 @@ class ElasticUtil(object):
             return " ".join(set(filter(None, list_return)))
 
         searches = [first_search, second_search, third_search]
-        for nr, values in enumerate(searches):
+        for values in searches:
             fields = []
             for item in values:
                 fields.append(prepare_search(gt(data, item)))
