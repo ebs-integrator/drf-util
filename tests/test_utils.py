@@ -1,5 +1,3 @@
-import datetime
-
 from django.test import TestCase
 
 from drf_util import utils

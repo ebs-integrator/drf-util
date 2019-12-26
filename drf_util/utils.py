@@ -1,8 +1,9 @@
 from itertools import repeat
 
 from dateutil import parser
-from django.db.models.base import Model
 from django.conf import settings
+from django.db.models.base import Model
+
 
 def dict_merge(a, b, path=None):
     if path is None: path = []
