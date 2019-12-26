@@ -13,3 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Function gt can now extract from a list with dicts values and added separator option for func parameters
 - CommonModel doesn't update date_updated each time changes are made
+
+## [0.0.20] - 2019-12-26
+### Changed
+- Function gt can now extract from a mongo engine Document

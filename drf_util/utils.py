@@ -3,6 +3,8 @@ from itertools import repeat
 from dateutil import parser
 from django.db.models.base import Model
 from django.conf import settings
+from mongoengine import Document
+
 
 def dict_merge(a, b, path=None):
     if path is None: path = []
@@ -41,7 +43,7 @@ def gt(obj, path, default=None, sep='.'):
                 return list(map(gt, obj, repeat(path)))
             elif part.isdigit():
                 obj = obj[int(part)]
-            elif isinstance(obj, Model):
+            elif isinstance(obj, Model) or isinstance(obj, Document):
                 obj = getattr(obj, part, default)
             else:
                 obj = obj.get(part, default)
