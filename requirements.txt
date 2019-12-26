@@ -1,8 +1,6 @@
 Django
 djangorestframework
 python-dateutil
-elasticsearch
-mongoengine
 
 psycopg2==2.7.6.1
 psycopg2-binary==2.7.6.1

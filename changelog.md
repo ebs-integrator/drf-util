@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.20] - 2019-12-26
 ### Changed
 - Function gt can now extract from a mongo engine Document
+- Elasticsearch and mongoengine are not requirements now

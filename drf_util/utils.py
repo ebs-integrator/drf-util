@@ -1,9 +1,9 @@
 from itertools import repeat
 
+import pkg_resources
 from dateutil import parser
 from django.db.models.base import Model
 from django.conf import settings
-from mongoengine import Document
 
 
 def dict_merge(a, b, path=None):
@@ -25,15 +25,19 @@ def dict_merge(a, b, path=None):
     return a
 
 
-def gt(obj, path, default=None, sep='.'):
+def gt(obj, path, default=None, sep='.', mongo=False):
     """
     Function that extracts the value from the specified path in obj and returns default if nothing found
     :param obj: Parameter in which we are searching for values in
     :param path: Path we are trying to search for in our obj
     :param default: Default value we return if nothing found in that path
     :param sep: Separator used between path values
+    :param mongo: Added if using mongo engine Document
     :return: Value in obj path if it exists or default value
     """
+    if mongo:
+        pkg_resources.require('mongoengine')
+        from mongoengine import Document
     try:
         parts = path.split(sep)
         all_key = "*"
@@ -43,7 +47,7 @@ def gt(obj, path, default=None, sep='.'):
                 return list(map(gt, obj, repeat(path)))
             elif part.isdigit():
                 obj = obj[int(part)]
-            elif isinstance(obj, Model) or isinstance(obj, Document):
+            elif isinstance(obj, Model) or (mongo and isinstance(obj, Document)):
                 obj = getattr(obj, part, default)
             else:
                 obj = obj.get(part, default)
