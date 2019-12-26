@@ -25,18 +25,17 @@ def dict_merge(a, b, path=None):
     return a
 
 
-def gt(obj, path, default=None, sep='.', mongo=False):
+def gt(obj, path, default=None, sep='.'):
     """
     Function that extracts the value from the specified path in obj and returns default if nothing found
     :param obj: Parameter in which we are searching for values in
     :param path: Path we are trying to search for in our obj
     :param default: Default value we return if nothing found in that path
     :param sep: Separator used between path values
-    :param mongo: Added if using mongo engine Document
     :return: Value in obj path if it exists or default value
     """
+    mongo = pkg_resources.resource_exists('mongoengine', '')
     if mongo:
-        pkg_resources.require('mongoengine')
         from mongoengine import Document
     try:
         parts = path.split(sep)
