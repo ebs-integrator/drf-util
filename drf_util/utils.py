@@ -4,7 +4,6 @@ import pkg_resources
 from dateutil import parser
 from django.db.models.base import Model
 from django.conf import settings
-from mongoengine import Document
 
 
 def dict_merge(a, b, path=None):
