@@ -1,8 +1,9 @@
 from itertools import repeat
 
+import pkg_resources
 from dateutil import parser
-from django.conf import settings
 from django.db.models.base import Model
+from django.conf import settings
 
 
 def dict_merge(a, b, path=None):
@@ -33,6 +34,9 @@ def gt(obj, path, default=None, sep='.'):
     :param sep: Separator used between path values
     :return: Value in obj path if it exists or default value
     """
+    mongo = pkg_resources.resource_exists('mongoengine', '')
+    if mongo:
+        from mongoengine import Document
     try:
         parts = path.split(sep)
         all_key = "*"
@@ -42,7 +46,7 @@ def gt(obj, path, default=None, sep='.'):
                 return list(map(gt, obj, repeat(path)))
             elif part.isdigit():
                 obj = obj[int(part)]
-            elif isinstance(obj, Model):
+            elif isinstance(obj, Model) or (mongo and isinstance(obj, Document)):
                 obj = getattr(obj, part, default)
             else:
                 obj = obj.get(part, default)

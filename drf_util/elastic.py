@@ -1,5 +1,5 @@
+import pkg_resources
 from django.utils.translation import gettext as _
-from elasticsearch import Elasticsearch, helpers
 from rest_framework.exceptions import ValidationError
 
 from drf_util.utils import gt
@@ -13,6 +13,8 @@ class ElasticUtil(object):
     known_indexes = []
 
     def __init__(self, **kwargs):
+        pkg_resources.require('elasticsearch')
+        from elasticsearch import Elasticsearch
         self.session = Elasticsearch(hosts=self.hosts, timeout=50, **kwargs)
         self.build_index_names()
 
@@ -46,6 +48,7 @@ class ElasticUtil(object):
         return result["result"]
 
     def insert_bulk(self, body):
+        from elasticsearch import helpers
         return helpers.bulk(self.session, body)
 
     def init_indexes(self):
