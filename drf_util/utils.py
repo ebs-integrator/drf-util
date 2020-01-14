@@ -34,7 +34,10 @@ def gt(obj, path, default=None, sep='.'):
     :param sep: Separator used between path values
     :return: Value in obj path if it exists or default value
     """
-    mongo = pkg_resources.resource_exists('mongoengine', '')
+    try:
+        mongo = pkg_resources.resource_exists('mongoengine', '')
+    except ModuleNotFoundError:
+        mongo = False
     if mongo:
         from mongoengine import Document
     try:
