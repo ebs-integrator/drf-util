@@ -50,6 +50,12 @@ class CommonModel(models.Model):
             self.save()
         return self
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.date_updated = timezone.now()
+        super(CommonModel, self).save(force_insert=force_insert, force_update=force_update, using=using,
+                                      update_fields=update_fields)
+
     class Meta:
         ordering = ['date_created']
         abstract = True
