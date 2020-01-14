@@ -104,6 +104,24 @@ class RestoreUserPassword(GenericAPIView):
     def post(self, request, *args, **kwargs):
         return Response({"valid": True})
 ```
+##### await_process_decorator
+Decorator for creating a queue for using a function, it is needed to adjust the call of a function from different processes (Сelery, Threads).
+For example, this decorator can be used to limit the number of requests in the parser. 
+  
+Definition:
+```python
+# rate : count of usage some function, by default it's 20 times
+# period : period of usage some function,  by default it's 1 minute
+await_process_decorator(rate=20, period=60)
+```
+
+Usage:
+
+```python
+@await_process_decorator(rate=10, period=5)  # 10 times per 5 seconds 
+def simple_print(text):
+    print(text)
+```
 
 ### Managers
 
