@@ -1,4 +1,4 @@
-from random import random
+import random
 
 FAKE_BROWSER_HEADERS = {
     "User-Agent": random.choice([  # getting random user agent
