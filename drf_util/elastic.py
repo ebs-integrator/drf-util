@@ -1,6 +1,8 @@
+import pkg_resources
 from django.utils.translation import gettext as _
-from elasticsearch import Elasticsearch, helpers
 from rest_framework.exceptions import ValidationError
+
+from drf_util.utils import gt
 
 
 class ElasticUtil(object):
@@ -11,6 +13,8 @@ class ElasticUtil(object):
     known_indexes = []
 
     def __init__(self, **kwargs):
+        pkg_resources.require('elasticsearch')
+        from elasticsearch import Elasticsearch
         self.session = Elasticsearch(hosts=self.hosts, timeout=50, **kwargs)
         self.build_index_names()
 
@@ -44,6 +48,7 @@ class ElasticUtil(object):
         return result["result"]
 
     def insert_bulk(self, body):
+        from elasticsearch import helpers
         return helpers.bulk(self.session, body)
 
     def init_indexes(self):
@@ -95,3 +100,70 @@ class ElasticUtil(object):
             'per_page': serializer.get_default_per_page(),
             'page': serializer.get_page(),
         }
+
+    @staticmethod
+    def triple_search(data: dict, first_search: list, second_search: list, third_search: list):
+        """
+        Function that generates 3 new fields for dict data which can be later used for diff priority searches.
+        :param data: Dictionary that has all your information and want to generate searches in
+        :param first_search: List of top priority fields
+        :param second_search: List of second priority fields
+        :param third_search: All the other fields you want to search by
+        :return: Dictionary data with first_search,second_search and third_search added in it
+        """
+
+        def prepare_search(*args):
+            list_return = []
+            for obj in args:
+                if isinstance(obj, list):
+                    list_return += obj
+                elif isinstance(obj, dict):
+                    list_return += obj.values()
+                else:
+                    list_return.append(obj)
+            text = " ".join(set(filter(None, list_return)))
+            return text.lower()
+
+        searches = {"first_search": first_search, "second_search": second_search, "third_search": third_search}
+        for key, values in searches.items():
+            fields = []
+            for item in values:
+                fields.append(prepare_search(gt(data, item)))
+            search = {key: prepare_search(fields)}
+            data.update(search)
+
+    @staticmethod
+    def triple_search_query(data: str, use_simple=False, additional_params={}):
+        """
+        Function that creates query for triple_search function above
+        :param data: Query that will be used to search by
+        :param use_simple: Enables simple_query_string if True and uses query_string if False. Default False
+        :param additional_params: Additional parameters to the query
+        :return: Returns triple_search query syntax
+        """
+
+        def prepare_query_name(value: str) -> str:
+            return "%s*" % value
+
+        if use_simple:
+            type_of_query = "simple_query_string"
+        else:
+            type_of_query = "query_string"
+        value = data.lower()
+        query = {
+            "bool":
+                {"should": [
+                    {"prefix": {
+                        "first_search.keyword": value
+                    }},
+                    {type_of_query: {
+                        "query": prepare_query_name(value),
+                        "fields": [
+                            "first_search^0.5",
+                            "second_search^0.2",
+                            "third_search^0.1"
+                        ], **additional_params
+                    }}
+                ]}
+        }
+        return query

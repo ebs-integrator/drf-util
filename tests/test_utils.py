@@ -1,5 +1,3 @@
-import datetime
-
 from django.test import TestCase
 
 from drf_util import utils
@@ -16,10 +14,11 @@ class UtilsTests(TestCase):
         self.assertEqual(utils.dict_merge({}, b), b)
 
     def test_gt(self):
-        data = {"a": {"b": 1, "c": [{"d": 2}]}}
+        data = {"a": {"b": 1, "c": [{"d": 2}, {"d": 3}]}}
         self.assertEqual(utils.gt(data, 'a.b'), 1)
         self.assertEqual(utils.gt(data, 'a.c.0.d'), 2)
         self.assertIsNone(utils.gt(data, 'a.b.c'))
+        self.assertEqual(utils.gt(data, 'a.c.*.d'), [2, 3])
 
     def test_sf(self):
         def func():
@@ -43,7 +42,7 @@ class UtilsTests(TestCase):
         self.assertEqual(utils.get_object_labels(data, ['c']), ['test'])
 
     def test_min_next(self):
-        items = [4,6,1]
+        items = [4, 6, 1]
         self.assertEqual(utils.min_next(items, 2), 4)
 
     def test_date(self):
