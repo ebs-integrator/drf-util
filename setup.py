@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='drf_util',
-    version='0.0.19',
+    version='0.0.22',
     description='Django Rest Framework Utils',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -39,7 +39,7 @@ setup(
         'Django>=1.11',
         'djangorestframework',
         'python-dateutil',
-        'elasticsearch',
+        'requests'
     ],
     license='MIT',
 )

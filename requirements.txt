@@ -1,6 +1,7 @@
 Django
 djangorestframework
 python-dateutil
+requests
 
 psycopg2==2.7.6.1
 psycopg2-binary==2.7.6.1
