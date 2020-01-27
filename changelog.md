@@ -28,3 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Hotfix
 - [FAKE_BROWSER_HEADERS bug fixed](https://github.com/iurii-ebs/drf-util/commit/24bf468746b6c320c5f966e5df4a64fca17fdc82)
 
+### [0.0.23] - 27-01-2020
+### Hotfix
+- [gt function map for all_key fix](https://github.com/elasmd/drf-util/commit/6f877c1560d633863115ef315f3b1aab1d0866bd)
