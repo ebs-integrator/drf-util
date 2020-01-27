@@ -46,7 +46,7 @@ def gt(obj, path, default=None, sep='.'):
         for nr, part in enumerate(parts):
             if part is all_key:
                 path = path.split(all_key + sep)[-1]  # If you use all_key we split by it and sep and get last value
-                return list(map(gt, obj, repeat(path)))
+                return list(map(gt, obj, repeat(path), repeat(default), repeat(sep)))
             elif part.isdigit():
                 obj = obj[int(part)]
             elif isinstance(obj, Model) or (mongo and isinstance(obj, Document)):
