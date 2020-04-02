@@ -45,7 +45,10 @@ class ElasticUtil(object):
             body=document,
             id=document_id
         )
-        return result["result"]
+        if isinstance(result, dict) and 'result' in result:
+            return result["result"]
+        else:
+            raise Exception(result)
 
     def insert_bulk(self, body):
         from elasticsearch import helpers
