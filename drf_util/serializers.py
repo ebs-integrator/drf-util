@@ -3,7 +3,7 @@ import copy
 from django.core.paginator import Paginator, EmptyPage
 from django.utils.translation import gettext as _
 from rest_framework import serializers
-from rest_framework.fields import Field
+from rest_framework.fields import Field, empty as empty_field
 from rest_framework.response import Response
 
 from drf_util.exceptions import ValidationException
@@ -62,10 +62,11 @@ class ChangebleSerializer(serializers.Serializer):
     @staticmethod
     def set_recursive_required(field):
         if hasattr(field, 'fields'):
-            for key, value in field.fields.items():
-                if isinstance(value, Field) and not hasattr(field.fields[key], 'default'):
-                    field.fields[key].required = True
-                    ChangebleSerializer.set_recursive_required(field.fields[key])
+            for value in field.fields.values():
+                default = getattr(value, 'default')
+                if isinstance(value, Field) and (not default or default is empty_field):
+                    value.required = True
+                    ChangebleSerializer.set_recursive_required(value)
 
     def update_properties(self, data):
         for key, value in data.items():
