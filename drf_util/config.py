@@ -43,7 +43,7 @@ def load_environment(ENV_VARS: dict, local_vars):
     vars_not_filled = []
 
     ENV_VARS.setdefault('SECRET_KEY', {'required': True})
-    ENV_VARS.setdefault('DEBUG', {'required': False, 'default': True})
+    ENV_VARS.setdefault('DEBUG', {'required': False, 'default': True, 'parse': lambda val: True if val == 'True' else False})
 
     for key, attrs in ENV_VARS.items():
         attrs.setdefault('default', '')
