@@ -63,8 +63,13 @@ class ChangebleSerializer(serializers.Serializer):
     def set_recursive_required(field):
         if hasattr(field, 'fields'):
             for value in field.fields.values():
+                # don't ignore default=""
                 default = getattr(value, 'default')
-                if isinstance(value, Field) and (not default or default is empty_field):
+                if default is empty_field:
+                    default = None
+                # if allow_null, don't set required
+                allow_null = getattr(value, 'allow_null')
+                if isinstance(value, Field) and (default is None and not allow_null):
                     value.required = True
                     ChangebleSerializer.set_recursive_required(value)
 
