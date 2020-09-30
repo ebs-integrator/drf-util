@@ -5,8 +5,6 @@ from tests.models import Thing
 
 
 class ModelsTests(TestCase):
-    def setUp(self):
-        print('All objects count', Thing.all_objects.count())
 
     def test_get_default_languages(self):
         data = {
