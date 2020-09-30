@@ -1,8 +1,5 @@
-from itertools import repeat
-
-import pkg_resources
+from typing import Any
 from dateutil import parser
-from django.db.models.base import Model
 from django.conf import settings
 
 
@@ -25,7 +22,7 @@ def dict_merge(a, b, path=None):
     return a
 
 
-def gt(obj, path, default=None, sep='.'):
+def gt(obj: object, path: str, default: Any = None, sep: str = '.') -> Any:
     """
     Function that extracts the value from the specified path in obj and returns default if nothing found
     :param obj: Parameter in which we are searching for values in
@@ -34,30 +31,39 @@ def gt(obj, path, default=None, sep='.'):
     :param sep: Separator used between path values
     :return: Value in obj path if it exists or default value
     """
-    try:
-        mongo = pkg_resources.resource_exists('mongoengine', '')
-    except ModuleNotFoundError:
-        mongo = False
-    if mongo:
-        from mongoengine import Document
-    try:
-        parts = path.split(sep)
-        all_key = "*"
-        for nr, part in enumerate(parts):
-            if part is all_key:
-                path = path.split(all_key + sep)[-1]  # If you use all_key we split by it and sep and get last value
-                return list(map(gt, obj, repeat(path), repeat(default), repeat(sep)))
-            elif part.isdigit():
-                obj = obj[int(part)]
-            elif isinstance(obj, Model) or (mongo and isinstance(obj, Document)):
-                obj = getattr(obj, part, default)
+    def _dispatch_item(_obj, _key):
+        if _key == '*':
+            for item in _obj:
+                yield item
+
+        elif hasattr(_obj, '__getitem__'):
+            if _key.isdigit():
+                yield _obj.__getitem__(int(_key))
             else:
-                obj = obj.get(part, default)
+                yield _obj.__getitem__(_key)
 
-        return obj
+        else:
+            yield getattr(_obj, _key)
 
+    def _dispatch_list(_gen, _key):
+        for _obj in _gen:
+            for item in _dispatch_item(_obj, _key):
+                yield item
+
+    obj = [obj]
+
+    for key in path.split(sep):
+        obj = _dispatch_list(obj, key)
+
+    try:
+        obj = list(obj)
     except Exception:
         return default
+
+    if len(obj) <= 1:
+        obj = next(iter(obj), default)
+
+    return obj
 
 
 def sf(function, exception=Exception):
