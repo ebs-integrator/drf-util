@@ -11,7 +11,9 @@ from .fields import DslField, DslQueryField
 
 
 __all__ = [
-    'DslSerializer',
+    'DslSerializer', 'DslQuerySerializer',
+    'IntegerRangeQueryField', 'FloatRangeQueryField',
+    'DateTimeRangeQueryField', 'DateRangeQueryField',
 ]
 
 
