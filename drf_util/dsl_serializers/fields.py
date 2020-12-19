@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Type, Iterable
-from datetime import datetime, date, time
 
 from elasticsearch_dsl.query import Query, Term, Terms
 from elasticsearch_dsl.search import Search
@@ -42,13 +41,13 @@ __all__ = [
 ]
 
 
-class DslField(Field, ABC):
+class DslField(Field):
     @abstractmethod
     def get_search(self, value: Any, search: Search = None, *args, **kwargs) -> Search:
         pass
 
 
-class DslSortField(DslField, ABC):
+class DslSortField(DslField):
     def get_keys(self, value, *args, **kwargs):
         return value
 
@@ -64,9 +63,9 @@ class DslSortField(DslField, ABC):
         return search.sort(*list(fields))
 
 
-class DslQueryField(DslField, ABC):
-    doc_field: str = None
-    dsl_query: Type[Query] = None
+class DslQueryField(DslField):
+    doc_field: str
+    dsl_query: Type[Query]
 
     def __init__(self, doc_field=None, dsl_query=None, *args, **kwargs):
         super(DslQueryField, self).__init__(*args, **kwargs)
@@ -97,7 +96,7 @@ class DslQueryField(DslField, ABC):
         return search.query(query)
 
 
-class DslSourceField(DslField, ABC):
+class DslSourceField(DslField):
     def get_fields(self, value, *args, **kwargs):
         return value
 
