@@ -6,9 +6,6 @@ requests
 psycopg2==2.7.6.1
 psycopg2-binary==2.7.6.1
 
-elasticsearch==7.10.1
-elasticsearch-dsl==7.3.0
-
 # Testing
 tox
 coverage
