@@ -96,6 +96,9 @@ class ElasticUtil(object):
         for result in results:
             prepared_results.append(prepare_function(result, context))
 
+        if isinstance(count, dict):
+            count = count.get('value')
+
         return {
             'data': serializer.get_fetched(prepared_results),
             'total_results': count if count < self.max_result_window else self.max_result_window,
