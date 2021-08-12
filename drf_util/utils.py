@@ -1,10 +1,35 @@
+import glob
+import sys
 from typing import Any
+
 from dateutil import parser
 from django.conf import settings
+from django.db.models import QuerySet, ForeignKey, ManyToManyField
+from django.db.models import TextChoices
+from drf_yasg import openapi
+from drf_yasg.generators import OpenAPISchemaGenerator
+from drf_yasg.views import get_schema_view
+from rest_framework.permissions import AllowAny
+from rest_framework.serializers import Serializer
+
+from drf_util.mixins import BothHttpAndHttpsSchemaGenerator
+
+
+class Colors(TextChoices):
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 def dict_merge(a, b, path=None):
-    if path is None: path = []
+    if path is None:
+        path = []
 
     for key in b:
         if key in a:
@@ -31,6 +56,7 @@ def gt(obj: object, path: str, default: Any = None, sep: str = '.') -> Any:
     :param sep: Separator used between path values
     :return: Value in obj path if it exists or default value
     """
+
     def _dispatch_item(_obj, _key):
         if _key == '*':
             for item in _obj:
@@ -169,3 +195,65 @@ def any_value(items: list):
     for item in items:
         if item:
             return item
+
+
+def iterate_query(queryset, offset_field, offset_start, limit=100):
+    while True:
+        object_list = list(queryset.filter(**{offset_field + "__gt": offset_start}).order_by(offset_field)[:limit])
+        if not len(object_list):
+            break
+
+        for obj in object_list:
+            offset_start = getattr(obj, offset_field)
+            yield obj
+
+
+def get_applications(base_folder=gt(settings, 'APPS_PATH', 'apps'), inside_file='', only_directory=True):
+    if inside_file:
+        inside_file += '*'
+
+    separator = '\\' if sys.platform.startswith('win') else '/'
+
+    apps = [
+        '.'.join(directory.split(separator)[:-1 if only_directory else None]).replace('.py', '')
+        for directory in glob.glob(f"{base_folder}/[!_]*/{inside_file}", recursive=True)
+    ]
+    return apps
+
+
+def add_related(queryset, serializer) -> QuerySet:
+    select_related = []
+    prefetch_related = []
+
+    if not isinstance(serializer, Serializer):
+        serializer = serializer()
+
+    for field_name, field_data in serializer.fields.items():
+        field_name = getattr(field_data, 'source', field_data)
+        field = gt(queryset.model, field_data.source, None)
+        if not field or not hasattr(field, 'field'):
+            continue
+
+        if isinstance(field.field, (ForeignKey, ManyToManyField)):
+            if hasattr(field, 'rel'):
+                prefetch_related.append(field_name)
+            else:
+                select_related.append(field_name)
+
+    return queryset.select_related(*select_related).prefetch_related(*prefetch_related)
+
+
+def get_custom_schema_view(title, default_version='v1', description='', *args, **kwargs):
+    return get_schema_view(
+        info=openapi.Info(
+            title=title,
+            default_version=default_version,
+            description=description,
+        ),
+        validators=['ssv'],
+        generator_class=BothHttpAndHttpsSchemaGenerator,
+        public=True,
+        permission_classes=(AllowAny,),
+        *args,
+        **kwargs
+    )

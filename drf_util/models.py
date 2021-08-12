@@ -25,6 +25,20 @@ def get_lang_value(dict_data, lang=None):
     return dict_data.get(lang, None)
 
 
+class LikeLookup(models.Lookup):
+    lookup_name = 'like'
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        params = lhs_params + rhs_params
+        return f'{lhs} LIKE {rhs}', params
+
+
+models.CharField.register_lookup(LikeLookup)
+models.TextField.register_lookup(LikeLookup)
+
+
 # ======================================================================================================================
 # Abstract models
 # ======================================================================================================================
@@ -103,6 +117,17 @@ class AbstractJsonModel(models.Model):
 
     def translate(self, lang):
         return self.languages[lang]
+
+    class Meta:
+        abstract = True
+
+
+class BaseModel(models.Model):
+    """
+        New version of CommonModel
+    """
+    modified_at = models.DateTimeField(auto_now=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
 
     class Meta:
         abstract = True

@@ -1,9 +1,12 @@
 from django.test import TestCase
 
 from drf_util import utils
+from tests.models import AnotherThing, Thing
+from tests.serializers import AnotherThingSerializer
 
 
 class UtilsTests(TestCase):
+    fixtures = ['tests/fixtures.json']
 
     def test_dict_merge(self):
         a = {'a': {'c': 1, 'd': {'x': 1}}}
@@ -53,3 +56,23 @@ class UtilsTests(TestCase):
         self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').minute, 28)
         self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').second, 29)
         self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').microsecond, 540898)
+
+    def test_get_applications(self):
+        apps = ['tests.apps.app1', 'tests.apps.app2', 'tests.apps.app3']
+        self.assertEqual(utils.get_applications('tests/apps'), apps)
+        self.assertEqual(utils.get_applications('tests/apps', inside_file='models.py'), ['tests.apps.app1'])
+        self.assertEqual(
+            utils.get_applications('tests/apps', inside_file='models.py', only_directory=False),
+            ['tests.apps.app1.models']
+        )
+
+    def test_add_related(self):
+        queryset = AnotherThing.objects.all()
+        serializer = AnotherThingSerializer
+        queryset = utils.add_related(queryset, serializer)
+        self.assertIsNotNone(queryset._prefetch_related_lookups)
+
+    def test_iterate_query(self):
+        queryset = Thing.objects.all()
+        for _ in utils.iterate_query(queryset, 'id', 0):
+            ...
