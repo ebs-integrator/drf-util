@@ -44,7 +44,6 @@ setup(
         'drf-yasg',
         'swagger-spec-validator',
         'varname',
-        'python-dateutil',
     ],
     license='MIT',
 )
