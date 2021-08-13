@@ -39,7 +39,12 @@ setup(
         'Django>=1.11',
         'djangorestframework',
         'python-dateutil',
-        'requests'
+        'requests',
+        'django-filter',
+        'drf-yasg',
+        'swagger-spec-validator',
+        'varname',
+        'python-dateutil',
     ],
     license='MIT',
 )
