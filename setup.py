@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='drf_util',
-    version='0.0.29',
+    version='1.0.0',
     description='Django Rest Framework Utils',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -25,6 +25,8 @@ setup(
         'Framework :: Django :: 2.0',
         'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
@@ -32,6 +34,8 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Utilities',
     ],
     python_requires=">=3.4",
@@ -39,7 +43,11 @@ setup(
         'Django>=1.11',
         'djangorestframework',
         'python-dateutil',
-        'requests'
+        'requests',
+        'django-filter',
+        'drf-yasg',
+        'swagger-spec-validator',
+        'varname',
     ],
     license='MIT',
 )

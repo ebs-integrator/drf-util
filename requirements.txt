@@ -1,10 +1,18 @@
-Django
-djangorestframework
-python-dateutil
+Django~=3.1.7
+djangorestframework~=3.12.2
+python-dateutil~=2.8.1
+django-filter~=2.4.0
+setuptools~=54.2.0
+
+drf-yasg==1.20.0
+swagger-spec-validator==2.7.3
+
 requests
 
 psycopg2==2.7.6.1
-psycopg2-binary==2.7.6.1
+psycopg2-binary==2.9.1
+
+varname==0.7.3
 
 # Testing
 tox

@@ -1,0 +1,45 @@
+[
+  {
+    "model": "tests.thing",
+    "pk": 1,
+    "fields": {
+      "title": "Thing title"
+    }
+  },
+  {
+    "model": "tests.thing",
+    "pk": 2,
+    "fields": {
+      "title": "Thing title"
+    }
+  },
+  {
+    "model": "tests.thing",
+    "pk": 3,
+    "fields": {
+      "title": "Thing title"
+    }
+  },
+  {
+    "model": "tests.thing",
+    "pk": 4,
+    "fields": {
+      "title": "Thing title"
+    }
+  },
+  {
+    "model": "tests.thing",
+    "pk": 5,
+    "fields": {
+      "title": "Thing title"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "user1",
+      "password": "password"
+    }
+  }
+]

@@ -1,16 +1,20 @@
 import copy
 
 from django.core.paginator import Paginator, EmptyPage
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework.fields import Field, empty as empty_field
 from rest_framework.response import Response
+from varname import varname
 
 from drf_util.exceptions import ValidationException
-from drf_util.utils import any_value
+from drf_util.utils import any_value, add_related
+
+BASE_FIELDS = ['id', 'created_at', 'modified_at']
 
 
-class ElasticFilterSerializer(serializers.Serializer):
+class ElasticFilterSerializer(serializers.Serializer):  # noqa
     sort_criteria = []
     default_filters = []
 
@@ -38,11 +42,11 @@ class ElasticFilterSerializer(serializers.Serializer):
         return results
 
 
-class EmptySerializer(serializers.Serializer):
+class EmptySerializer(serializers.Serializer):  # noqa
     pass
 
 
-class IdSerializer(serializers.Serializer):
+class IdSerializer(serializers.Serializer):  # noqa
     id = serializers.IntegerField()
 
 
@@ -52,7 +56,7 @@ class Fld(serializers.Field):
         super(Fld, self).__init__(**kwargs)
 
 
-class ChangebleSerializer(serializers.Serializer):
+class ChangebleSerializer(serializers.Serializer):  # noqa
     # def to_internal_value(self, data):
     #     return data
     #
@@ -106,7 +110,7 @@ class ChangebleSerializer(serializers.Serializer):
                     self.fields[key].update_properties(value)
 
 
-class PaginatorSerializer(serializers.Serializer):
+class PaginatorSerializer(serializers.Serializer):  # noqa
     page = serializers.IntegerField(default=1, min_value=1)
     per_page = serializers.IntegerField(default=50, min_value=1, required=False)
 
@@ -162,13 +166,67 @@ class PaginatorSerializer(serializers.Serializer):
 
 
 class StringListField(serializers.ListField):
+    """
+        serializers.CharField(many=True)
+    """
     child = serializers.CharField()
 
 
-class FilterSerializer(serializers.Serializer):
+class FilterSerializer(serializers.Serializer):  # noqa
     def get_filter(self, data, queryset):
         for key, value in data.items():
             call_attribute = 'filter_' + key
             if key in self.validated_data and hasattr(self, call_attribute):
                 queryset = getattr(self, call_attribute)(value, queryset)
         return queryset
+
+
+class ReturnSuccessSerializer(serializers.Serializer):  # noqa
+    success = serializers.BooleanField(default=True)
+    message = serializers.CharField()
+
+
+class BaseModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = None
+        fields = '__all__'
+        read_only_fields = BASE_FIELDS
+
+    def __new__(cls, *args, **kwargs):
+        args = list(args)
+        if args and isinstance(args[0], QuerySet):
+            args[0] = add_related(args[0], cls)
+        return super().__new__(cls, *args, **kwargs)
+
+    @property
+    def request(self):
+        return self.context.get('request')
+
+
+def get_meta_kwargs(kwargs):
+    meta_kwargs = {key.replace('meta_', '', 1): kwargs.pop(key) for key in kwargs.copy() if key.startswith('meta_')}
+    return meta_kwargs
+
+
+def build_model_serializer(base=BaseModelSerializer, add_bases=True, **kwargs):
+    meta_kwargs = get_meta_kwargs(kwargs)
+
+    if add_bases:
+        fields = meta_kwargs.get('fields')
+        if fields and not meta_kwargs.get('exclude'):
+            meta_kwargs.update(fields=(*BASE_FIELDS, *fields))
+        if read_only_fields := meta_kwargs.get('read_only_fields'):
+            meta_kwargs.update(read_only_fields=(*BASE_FIELDS, *read_only_fields))
+
+    model = meta_kwargs.get('model', base.Meta.model)
+
+    assert model
+
+    meta = type('Meta', (base.Meta,), meta_kwargs)
+
+    model_serializer = type(varname(), (base,), {
+        'Meta': meta,
+        **kwargs
+    })
+
+    return model_serializer
