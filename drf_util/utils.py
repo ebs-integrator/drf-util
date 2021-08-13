@@ -6,13 +6,7 @@ from dateutil import parser
 from django.conf import settings
 from django.db.models import QuerySet, ForeignKey, ManyToManyField
 from django.db.models import TextChoices
-from drf_yasg import openapi
-from drf_yasg.generators import OpenAPISchemaGenerator
-from drf_yasg.views import get_schema_view
-from rest_framework.permissions import AllowAny
 from rest_framework.serializers import Serializer
-
-from drf_util.mixins import BothHttpAndHttpsSchemaGenerator
 
 
 class Colors(TextChoices):
@@ -244,6 +238,11 @@ def add_related(queryset, serializer) -> QuerySet:
 
 
 def get_custom_schema_view(title, default_version='v1', description='', *args, **kwargs):
+    from drf_yasg import openapi
+    from drf_yasg.views import get_schema_view
+    from rest_framework.permissions import AllowAny
+    from drf_util.mixins import BothHttpAndHttpsSchemaGenerator
+
     return get_schema_view(
         info=openapi.Info(
             title=title,
