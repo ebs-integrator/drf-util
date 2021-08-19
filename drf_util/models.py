@@ -1,14 +1,10 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import Manager
 from django.utils import timezone
 
 from drf_util.managers import NoDeleteManager
-
-# getting user model (Custom or Default)
-User = get_user_model()
 
 
 # ======================================================================================================================
