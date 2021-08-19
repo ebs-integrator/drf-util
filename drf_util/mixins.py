@@ -12,7 +12,7 @@ class CustomAutoSchema(SwaggerAutoSchema):
         return call_view_method(self.view, 'get_serializer')
 
     def get_view_serializer(self):
-        return call_view_method(self.view, 'get_serializer_create')
+        return call_view_method(self.view, 'get_serializer_create') or self.get_view_response_serializer()
 
     def get_view_query_serializer(self):
         return call_view_method(self.view, 'get_query_serializer')

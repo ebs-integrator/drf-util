@@ -389,6 +389,9 @@ Parameters with prefix 'meta_' is added to the meta class, the rest are added in
 
 ### Views
 
+Note: for them to work, set in swagger settings 
+DEFAULT_AUTO_SCHEMA_CLASS=drf_util.mixins.CustomAutoSchema
+
 #### BaseModelViewSet
 
 Usage:
