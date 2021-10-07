@@ -38,10 +38,7 @@ models.TextField.register_lookup(LikeLookup)
 # ======================================================================================================================
 # Abstract models
 # ======================================================================================================================
-class CommonModel(models.Model):
-    date_created = models.DateTimeField(default=timezone.now)
-    date_updated = models.DateTimeField(default=timezone.now)
-
+class UpdateModel(models.Model):
     def update_object(self, save=True, **kwargs):
         """
         Update object by dict data, ignore data if field not exist
@@ -59,6 +56,14 @@ class CommonModel(models.Model):
         if save and changed:
             self.save()
         return self
+
+    class Meta:
+        abstract = True
+
+
+class CommonModel(models.Model, UpdateModel):
+    date_created = models.DateTimeField(default=timezone.now)
+    date_updated = models.DateTimeField(default=timezone.now)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -118,7 +123,7 @@ class AbstractJsonModel(models.Model):
         abstract = True
 
 
-class BaseModel(models.Model):
+class BaseModel(models.Model, UpdateModel):
     """
         New version of CommonModel
     """
