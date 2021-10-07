@@ -1,9 +1,8 @@
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import Manager
 from django.utils import timezone
-
+import logging
 from drf_util.managers import NoDeleteManager
 
 
@@ -38,10 +37,7 @@ models.TextField.register_lookup(LikeLookup)
 # ======================================================================================================================
 # Abstract models
 # ======================================================================================================================
-class CommonModel(models.Model):
-    date_created = models.DateTimeField(default=timezone.now)
-    date_updated = models.DateTimeField(default=timezone.now)
-
+class UpdateModel(models.Model):
     def update_object(self, save=True, **kwargs):
         """
         Update object by dict data, ignore data if field not exist
@@ -59,6 +55,14 @@ class CommonModel(models.Model):
         if save and changed:
             self.save()
         return self
+
+    class Meta:
+        abstract = True
+
+
+class CommonModel(UpdateModel):
+    date_created = models.DateTimeField(default=timezone.now)
+    date_updated = models.DateTimeField(default=timezone.now)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -99,26 +103,7 @@ class NoDeleteModel(models.Model):
         abstract = True
 
 
-class AbstractJsonModel(models.Model):
-    languages = JSONField(default=get_default_languages)
-
-    def update_lang(self, lang, value, save=True):
-        self.languages[lang] = value
-        if save:
-            self.save()
-        return self
-
-    def get_lang(self, lang=None):
-        return get_lang_value(self.languages, lang)
-
-    def translate(self, lang):
-        return self.languages[lang]
-
-    class Meta:
-        abstract = True
-
-
-class BaseModel(models.Model):
+class BaseModel(UpdateModel):
     """
         New version of CommonModel
     """
@@ -127,3 +112,29 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+# this model works only with psycopg2
+try:
+    from django.contrib.postgres.fields import JSONField
+
+
+    class AbstractJsonModel(models.Model):
+        languages = JSONField(default=get_default_languages)
+
+        def update_lang(self, lang, value, save=True):
+            self.languages[lang] = value
+            if save:
+                self.save()
+            return self
+
+        def get_lang(self, lang=None):
+            return get_lang_value(self.languages, lang)
+
+        def translate(self, lang):
+            return self.languages[lang]
+
+        class Meta:
+            abstract = True
+except ModuleNotFoundError:
+    logging.warning("psycofg2 is required for AbstractJsonModel.")
