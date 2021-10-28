@@ -73,7 +73,7 @@ class ElasticUtil(object):
             del source['labels']
         return source
 
-    def search_response(self, serializer, index, prepare_function=None, context=None, query=None):
+    def search_response(self, serializer, index, prepare_function=None, context=None, query=None, doc_type=None):
         size = serializer.get_default_per_page()
         skip = serializer.get_skip()
 
@@ -87,7 +87,7 @@ class ElasticUtil(object):
             "size": size,
             "sort": serializer.sort_criteria,
             "query": {"bool": query} if query else {"bool": {"must": serializer.get_filter()}}
-        })
+        }, doc_type=doc_type)
 
         if prepare_function is None:
             prepare_function = self.get_source
