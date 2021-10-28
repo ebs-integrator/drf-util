@@ -31,17 +31,17 @@ class ElasticUtil(object):
                 self.known_indexes.append(index_name)
 
     def search(self, index, body, doc_type=None):
-        response = self.session.search(index=index, doc_type=doc_type if doc_type else '_doc', body=body)
+        response = self.session.search(index=index, doc_type=doc_type if doc_type else index, body=body)
         return response['hits']['hits'], response['hits']['total']
 
     def count(self, index, body, doc_type=None):
-        response = self.session.count(index=index, doc_type=doc_type if doc_type else '_doc', body=body)
+        response = self.session.count(index=index, doc_type=doc_type if doc_type else index, body=body)
         return response['count']
 
     def add_document(self, index, document, doc_type=None, document_id=None):
         result = self.session.index(
             index=index,
-            doc_type=doc_type if doc_type else '_doc',
+            doc_type=doc_type if doc_type else index,
             body=document,
             id=document_id
         )
