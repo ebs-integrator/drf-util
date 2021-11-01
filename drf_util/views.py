@@ -8,6 +8,7 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.settings import api_settings
 
 from drf_util.filters import CustomFilterBackend
 from drf_util.pagination import CustomPagination
@@ -72,7 +73,7 @@ class BaseViewSet(GenericViewSet):
     serializer_class = None
     serializer_create_class = None
     serializer_by_action = {}
-    permission_classes_by_action = {"default": [IsAuthenticated]}
+    permission_classes_by_action = {"default": api_settings.DEFAULT_PERMISSION_CLASSES}
     autocomplete_field = None
 
     def get_queryset(self) -> QuerySet:
