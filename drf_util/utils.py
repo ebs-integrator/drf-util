@@ -202,7 +202,7 @@ def iterate_query(queryset, offset_field, offset_start, limit=100):
             yield obj
 
 
-def get_applications(base_folder=gt(settings, 'APPS_PATH', 'apps'), inside_file='', only_directory=True):
+def get_applications(base_folder='apps', inside_file='', only_directory=True):
     if inside_file:
         inside_file += '*'
 
