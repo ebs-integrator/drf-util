@@ -11,7 +11,7 @@ def serialize_decorator(serializer_method, preview_function=None, read_params=Fa
         def _decorator(*args, **kwargs):
             request = next(filter(lambda arg: isinstance(arg, Request), args))
 
-            if request.method in ["POST", "PATCH", "PUT"]:
+            if request.method in ["POST", "PATCH", "PUT", "DELETE"]:
                 data = request.query_params if read_params else request.data
             else:
                 data = request.query_params
