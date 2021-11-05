@@ -116,7 +116,7 @@ for _ in utils.iterate_query(queryset, 'id', 0):
 Definition:
 
 ```python
-get_applications(base_folder=gt(settings, 'APPS_PATH', 'apps'), inside_file='', only_directory=True)
+get_applications(base_folder='apps', inside_file='', only_directory=True)
 ```
 
 Usage:

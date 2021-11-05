@@ -1,17 +1,12 @@
-import warnings
-
 from django.db.models import QuerySet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, filters, status
+from rest_framework import mixins, status
 from rest_framework.decorators import permission_classes, api_view
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.settings import api_settings
 
-from drf_util.filters import CustomFilterBackend
-from drf_util.pagination import CustomPagination
 from drf_util.utils import add_related
 
 health_check_response = openapi.Response('Health check')
@@ -73,7 +68,7 @@ class BaseViewSet(GenericViewSet):
     serializer_class = None
     serializer_create_class = None
     serializer_by_action = {}
-    permission_classes_by_action = {"default": api_settings.DEFAULT_PERMISSION_CLASSES}
+    permission_classes_by_action = {}
     autocomplete_field = None
 
     def get_queryset(self) -> QuerySet:
@@ -121,8 +116,6 @@ class BaseViewSet(GenericViewSet):
 
 
 class BaseListModelMixin(mixins.ListModelMixin):
-    filter_backends = (filters.OrderingFilter, CustomFilterBackend, filters.SearchFilter,)
-    pagination_class = CustomPagination
     filter_class = None
     search_fields = ()
     ordering_fields = '__all__'
