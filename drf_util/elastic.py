@@ -30,7 +30,9 @@ class ElasticUtil(object):
                 setattr(self, key, index_name)
                 self.known_indexes.append(index_name)
 
-    def search(self, index, body, doc_type=None):
+    def search(self, index, body, doc_type=None, track_total_hits=None):
+        if track_total_hits is not None:
+            body.update({'track_total_hits': track_total_hits})
         response = self.session.search(index=index, doc_type=doc_type if doc_type else index, body=body)
         return response['hits']['hits'], response['hits']['total']
 
@@ -73,7 +75,7 @@ class ElasticUtil(object):
             del source['labels']
         return source
 
-    def search_response(self, serializer, index, prepare_function=None, context=None, query=None, doc_type=None):
+    def search_response(self, serializer, index, prepare_function=None, context=None, query=None, doc_type=None, track_total_hits=None):
         size = serializer.get_default_per_page()
         skip = serializer.get_skip()
 
@@ -87,7 +89,7 @@ class ElasticUtil(object):
             "size": size,
             "sort": serializer.sort_criteria,
             "query": {"bool": query} if query else {"bool": {"must": serializer.get_filter()}}
-        }, doc_type=doc_type)
+        }, doc_type=doc_type, track_total_hits=track_total_hits)
 
         if prepare_function is None:
             prepare_function = self.get_source
