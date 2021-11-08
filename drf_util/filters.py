@@ -91,7 +91,8 @@ class CustomOrderingFilter(filters.OrderingFilter):
             description=force_str(self.ordering_description),
         )
 
-        if (ordering_fields := view.ordering_fields) and ordering_fields != '__all__':
+        ordering_fields = getattr(view, 'ordering_fields', None)
+        if ordering_fields and ordering_fields != '__all__':
             negative_fields = [f'-{field}' for field in ordering_fields if not field.startswith('-')]
             schema = coreschema.Enum(
                 title=force_str(self.ordering_title),
