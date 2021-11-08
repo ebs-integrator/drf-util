@@ -215,7 +215,9 @@ def build_model_serializer(base=BaseModelSerializer, add_bases=True, **kwargs):
         fields = meta_kwargs.get('fields')
         if fields and not meta_kwargs.get('exclude'):
             meta_kwargs.update(fields=(*BASE_FIELDS, *fields))
-        if read_only_fields := meta_kwargs.get('read_only_fields'):
+
+        read_only_fields = meta_kwargs.get('read_only_fields')
+        if read_only_fields:
             meta_kwargs.update(read_only_fields=(*BASE_FIELDS, *read_only_fields))
 
     model = meta_kwargs.get('model', base.Meta.model)
