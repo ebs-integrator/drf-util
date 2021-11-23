@@ -72,6 +72,9 @@ def gt(obj: object, path: str, default: Any = None, sep: str = '.') -> Any:
 
     obj = [obj]
 
+    if not isinstance(path, str):
+        return default
+
     for key in path.split(sep):
         obj = _dispatch_list(obj, key)
 
