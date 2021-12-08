@@ -77,11 +77,11 @@ class BaseViewSet(GenericViewSet):
             queryset = add_related(queryset, self.get_serializer())
         return queryset
 
-    def get_serializer_class(self):
-        if self.action in self.serializer_by_action:
-            return self.serializer_by_action[self.action]
+    def get_serializer_by_action(self):
+        return self.serializer_by_action.get(self.action)
 
-        return super().get_serializer_class()
+    def get_serializer_class(self):
+        return self.get_serializer_by_action() or super().get_serializer_class()
 
     def get_permissions(self):
         try:
@@ -109,7 +109,7 @@ class BaseViewSet(GenericViewSet):
         return self.query_serializer
 
     def get_serializer_create_class(self):
-        return self.serializer_create_class if self.serializer_create_class is not None else self.serializer_class
+        return self.get_serializer_by_action() or self.serializer_create_class or self.serializer_class
 
     def get_object_id(self):
         return self.kwargs.get(self.lookup_field)
