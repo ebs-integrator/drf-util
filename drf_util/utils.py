@@ -3,7 +3,6 @@ import sys
 from typing import Any
 
 from dateutil import parser
-from django.conf import settings
 from django.db.models import QuerySet, ForeignKey, ManyToManyField
 from django.db.models import TextChoices
 from rest_framework.serializers import Serializer
@@ -157,6 +156,8 @@ def offset_objects(key, get_function, save_function, storage):
 
 
 def date(item):
+    from django.conf import settings
+
     try:
         return parser.parse(item, ignoretz=not getattr(settings, 'USE_TZ', False))
     except TypeError:
@@ -164,6 +165,8 @@ def date(item):
 
 
 def to_dt(items):
+    from django.conf import settings
+
     for k, item in enumerate(items):
         if item:
             items[k] = parser.parse(item, ignoretz=not getattr(settings, 'USE_TZ', False))
