@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from varname import varname
 
 from drf_util.exceptions import ValidationException
+from drf_util.fields import CustomPrimaryKeyRelatedField
 from drf_util.utils import any_value, add_related
 
 BASE_FIELDS = ['id', 'created_at', 'modified_at']
@@ -187,6 +188,8 @@ class ReturnSuccessSerializer(serializers.Serializer):  # noqa
 
 
 class BaseModelSerializer(serializers.ModelSerializer):
+    serializer_related_field = CustomPrimaryKeyRelatedField
+
     class Meta:
         model = None
         fields = '__all__'
