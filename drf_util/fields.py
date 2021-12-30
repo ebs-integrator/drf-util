@@ -32,7 +32,8 @@ class PrimaryKeyRelatedField(relations.PrimaryKeyRelatedField):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if protected_lookup_function := getattr(self.queryset.model(), 'get_protected_lookup_query', None):
+        protected_lookup_function = getattr(self.queryset.model(), 'get_protected_lookup_query', None)
+        if protected_lookup_function:
             query = protected_lookup_function(self.request.account)
             queryset = queryset.filter(query)
         return queryset
