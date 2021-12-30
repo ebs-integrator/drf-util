@@ -1,10 +1,10 @@
 from django.utils.translation import gettext_lazy as _
-from rest_framework.relations import PrimaryKeyRelatedField, MANY_RELATION_KWARGS, ManyRelatedField
+from rest_framework import relations
 
 
-class CustomManyRelatedField(ManyRelatedField):
+class ManyRelatedField(relations.ManyRelatedField):
     default_error_messages = {
-        **ManyRelatedField.default_error_messages,
+        **relations.ManyRelatedField.default_error_messages,
         'required': _('This field is required.'),
         'does_not_exist': _('Invalid pks "{pk_value}" - objects do not exist.'),
         'incorrect_type': _('Incorrect type. Expected pk value, received {data_type}.'),
@@ -25,7 +25,7 @@ class CustomManyRelatedField(ManyRelatedField):
         return items
 
 
-class CustomPrimaryKeyRelatedField(PrimaryKeyRelatedField):
+class PrimaryKeyRelatedField(relations.PrimaryKeyRelatedField):
     @property
     def request(self):
         return self.context.get('request')
@@ -41,6 +41,6 @@ class CustomPrimaryKeyRelatedField(PrimaryKeyRelatedField):
     def many_init(cls, *args, **kwargs):
         list_kwargs = {'child_relation': cls(*args, **kwargs)}
         for key in kwargs:
-            if key in MANY_RELATION_KWARGS:
+            if key in relations.MANY_RELATION_KWARGS:
                 list_kwargs[key] = kwargs[key]
-        return CustomManyRelatedField(**list_kwargs)
+        return ManyRelatedField(**list_kwargs)
