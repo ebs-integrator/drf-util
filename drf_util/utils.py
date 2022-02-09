@@ -205,14 +205,14 @@ def iterate_query(queryset, offset_field, offset_start, limit=100):
             yield obj
 
 
-def get_applications(base_folder='apps', inside_file='', only_directory=True):
+def get_applications(base_folder='apps', inside_file='', only_directory=True, join_character='.'):
     if inside_file:
         inside_file += '*'
 
     separator = '\\' if sys.platform.startswith('win') else '/'
 
     apps = [
-        '.'.join(directory.split(separator)[:-1 if only_directory else None]).replace('.py', '')
+        join_character.join(directory.split(separator)[:-1 if only_directory else None]).replace('.py', '')
         for directory in glob.glob(f"{base_folder}/[!_]*/{inside_file}", recursive=True)
     ]
     return apps
