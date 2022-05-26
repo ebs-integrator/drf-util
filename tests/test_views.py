@@ -10,9 +10,18 @@ class ViewsTestCase(BaseTestCase, TestCase):
         self.assertEqual(len(response['schemes']), 2)
 
 
-class ViewCRUDTestCase(CRUDTestCase, TestCase):
+class ThingViewCRUDTestCase(CRUDTestCase, TestCase):
     fixtures = ['tests/fixtures.json']
     base_view = 'things'
+    queryset = Thing.objects.all()
+    fake_data = {
+        'title': 'Thing name'
+    }
+
+
+class ThingRelatedRelatedCRUDTestCase(CRUDTestCase, TestCase):
+    fixtures = ['tests/fixtures.json']
+    base_view = 'things-related'
     queryset = Thing.objects.all()
     fake_data = {
         'title': 'Thing name'

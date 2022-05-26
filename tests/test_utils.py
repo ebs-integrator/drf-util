@@ -58,7 +58,7 @@ class UtilsTests(TestCase):
         self.assertEqual(utils.date('2019-03-18T09:28:29.540898+00:00').microsecond, 540898)
 
     def test_get_applications(self):
-        apps = ['tests.apps.app1', 'tests.apps.app2', 'tests.apps.app3']
+        apps = ['tests.apps.app1']
         self.assertEqual(utils.get_applications('tests/apps'), apps)
         self.assertEqual(utils.get_applications('tests/apps', inside_file='models.py'), ['tests.apps.app1'])
         self.assertEqual(

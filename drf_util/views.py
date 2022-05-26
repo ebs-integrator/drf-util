@@ -1,13 +1,19 @@
-from django.db.models import QuerySet
+import inspect
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, status
 from rest_framework.decorators import permission_classes, api_view
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-
+from django_filters import (
+    FilterSet,
+)
 from drf_util.utils import add_related
+from rest_framework.permissions import (
+    AllowAny,
+    BasePermission,
+    BasePermissionMetaclass,
+)
 
 health_check_response = openapi.Response('Health check')
 
@@ -67,14 +73,46 @@ class BaseViewSet(GenericViewSet):
     query_serializer = None
     serializer_class = None
     serializer_create_class = None
+    serializer_retrieve_class = None
     serializer_by_action = {}
     permission_classes_by_action = {}
     autocomplete_field = None
+    prefetch_related = ()
+    select_related = ()
+    autocomplete_related = True
 
-    def get_queryset(self) -> QuerySet:
+    def get_prefetch_related(self):
+        if isinstance(self.prefetch_related, str):
+            return f'{self.prefetch_related}',
+
+        if isinstance(self.prefetch_related, tuple):
+            return self.prefetch_related
+        return ()
+
+    def get_select_related(self):
+        if isinstance(self.select_related, str):
+            return f'{self.select_related}',
+
+        if isinstance(self.select_related, tuple):
+            return self.select_related
+        return ()
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return
+
         queryset = super().get_queryset()
-        if self.serializer_class and callable(self.get_serializer_class()):
+        if self.serializer_class and callable(self.get_serializer_class()) and self.autocomplete_related:
             queryset = add_related(queryset, self.get_serializer())
+
+        # Fetch specified relations
+        if not self.autocomplete_related:
+            queryset = queryset.prefetch_related(
+                *self.get_prefetch_related()
+            ).select_related(
+                *self.get_select_related()
+            )
+
         return queryset
 
     def get_serializer_by_action(self):
@@ -83,23 +121,43 @@ class BaseViewSet(GenericViewSet):
     def get_serializer_class(self):
         return self.get_serializer_by_action() or super().get_serializer_class()
 
+    @staticmethod
+    def make_permissions(classes: list = None):
+        permissions = []
+
+        if classes is None:
+            classes = []
+
+        if not isinstance(classes, list) and issubclass(type(classes), BasePermission):
+            classes = [classes]
+
+        for permission in classes:
+            if issubclass(type(permission), BasePermission) or issubclass(type(permission), BasePermissionMetaclass):
+                permissions.append(permission if not inspect.isclass(permission) else permission())  # noqa
+
+        return permissions
+
     def get_permissions(self):
+        permissions = self.make_permissions(classes=self.permission_classes)
+
         try:
             # return permission_classes depending on `action`
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
+            permissions = self.make_permissions(classes=self.permission_classes_by_action[self.action])
         except KeyError:
-            # action is not set return default permission_classes
+            # action is not set return default permission_classes_by_action, if exists
             default = self.permission_classes_by_action.get('default')
             if default:
-                if hasattr(default, '__iter__'):
-                    return [permission() for permission in default]
-                else:
-                    return [default()]  # noqa
+                permissions = self.make_permissions(classes=default)
 
-            return [permission() for permission in self.permission_classes]
+        return permissions
 
     def get_serializer_create(self, *args, **kwargs):
         serializer_class = self.get_serializer_create_class()
+        kwargs['context'] = self.get_serializer_context()
+        return serializer_class(*args, **kwargs)
+
+    def get_serializer_retrieve(self, *args, **kwargs):
+        serializer_class = self.get_serializer_retrieve_class()
         kwargs['context'] = self.get_serializer_context()
         return serializer_class(*args, **kwargs)
 
@@ -111,15 +169,54 @@ class BaseViewSet(GenericViewSet):
     def get_serializer_create_class(self):
         return self.get_serializer_by_action() or self.serializer_create_class or self.serializer_class
 
+    def get_serializer_retrieve_class(self):
+        return self.get_serializer_by_action() or self.serializer_retrieve_class or self.serializer_class
+
     def get_object_id(self):
         return self.kwargs.get(self.lookup_field)
 
 
-class BaseListModelMixin(mixins.ListModelMixin):
+class BaseListModelMixin:
     filter_class = None
     search_fields = ()
+    filterset_fields = []
     ordering_fields = '__all__'
     ordering = ['-id']
+
+    """
+    List a queryset.
+    """
+
+    def __init__(self, **kwargs):
+        is_filter_class_set = False
+
+        # Class has filter_class set , check if value is not None
+        if hasattr(self, 'filter_class') and getattr(self, 'filter_class', None):
+            is_filter_class_set = True
+
+        # Automatically create a filter class for available filter set fields
+        if not is_filter_class_set and hasattr(self, 'filterset_fields'):
+            # Dynamic filter classes
+            namespace = self.queryset.model.__name__  # noqa
+            self.filter_class = type(f'{namespace}FilterClass', (FilterSet,), {
+                'Meta': type(f'{namespace}FilterMetaClass', (object,), {
+                    'model': self.queryset.model,  # noqa
+                    'fields': self.filterset_fields
+                })
+            })
+
+        super().__init__(**kwargs)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())  # noqa
+
+        page = self.paginate_queryset(queryset)  # noqa
+        if page is not None:
+            serializer = self.get_serializer_retrieve(page, many=True)  # noqa
+            return self.get_paginated_response(serializer.data)  # noqa
+
+        serializer = self.get_serializer_retrieve(queryset, many=True)  # noqa
+        return Response(serializer.data)
 
 
 class BaseReadOnlyViewSet(BaseListModelMixin, mixins.RetrieveModelMixin, BaseViewSet):
