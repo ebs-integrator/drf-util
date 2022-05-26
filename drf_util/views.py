@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, status
@@ -10,7 +11,6 @@ from django_filters import (
 from drf_util.utils import add_related
 from rest_framework.permissions import (
     AllowAny,
-    BasePermission,
 )
 
 health_check_response = openapi.Response('Health check')
@@ -94,9 +94,9 @@ class BaseViewSet(GenericViewSet):
 
         return select_related
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         if getattr(self, 'swagger_fake_view', False):
-            return
+            return self.queryset.none()
 
         queryset = super().get_queryset()
         if self.serializer_class and callable(self.get_serializer_class()) and self.autocomplete_related:
