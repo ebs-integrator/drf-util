@@ -91,7 +91,7 @@ class BaseViewSet(GenericViewSet):
 
     def get_select_related(self):
         if isinstance(self.select_related, str):
-            return f'{self.select_related}',
+            return self.select_related,
 
         if isinstance(self.select_related, tuple):
             return self.select_related
