@@ -125,7 +125,7 @@ class BaseViewSet(GenericViewSet):
         if classes is None:
             classes = []
 
-        if issubclass(type(classes), BasePermission):
+        if not hasattr(classes, '__iter__'):
             classes = [classes]
 
         for permission in classes:
