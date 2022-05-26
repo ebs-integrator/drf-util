@@ -83,7 +83,7 @@ class BaseViewSet(GenericViewSet):
 
     def get_prefetch_related(self):
         if isinstance(self.prefetch_related, str):
-            return f'{self.prefetch_related}',
+            return self.prefetch_related,
 
         if isinstance(self.prefetch_related, tuple):
             return self.prefetch_related
