@@ -1,6 +1,5 @@
 from rest_framework import serializers
-
-from drf_util.serializers import BaseModelSerializer, build_model_serializer
+from drf_util.serializers import build_model_serializer
 from tests.models import Thing, AnotherThing
 
 
@@ -14,5 +13,3 @@ AnotherThingSerializer = build_model_serializer(
     things=ThingSerializer(many=True),
     meta_model=AnotherThing,
 )
-
-
