@@ -1,4 +1,3 @@
-import inspect
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, status
@@ -12,7 +11,6 @@ from drf_util.utils import add_related
 from rest_framework.permissions import (
     AllowAny,
     BasePermission,
-    BasePermissionMetaclass,
 )
 
 health_check_response = openapi.Response('Health check')
@@ -74,6 +72,7 @@ class BaseViewSet(GenericViewSet):
     serializer_class = None
     serializer_create_class = None
     serializer_retrieve_class = None
+    serializer_list_class = None
     serializer_by_action = {}
     permission_classes_by_action = {}
     autocomplete_field = None
@@ -82,20 +81,18 @@ class BaseViewSet(GenericViewSet):
     autocomplete_related = True
 
     def get_prefetch_related(self):
-        if isinstance(self.prefetch_related, str):
-            return self.prefetch_related,
+        prefetch_related = self.prefetch_related
+        if isinstance(prefetch_related, str) or not hasattr(prefetch_related, '__iter__'):
+            prefetch_related = (prefetch_related,)
 
-        if isinstance(self.prefetch_related, tuple):
-            return self.prefetch_related
-        return ()
+        return prefetch_related
 
     def get_select_related(self):
-        if isinstance(self.select_related, str):
-            return self.select_related,
+        select_related = self.select_related
+        if isinstance(select_related, str) or not hasattr(select_related, '__iter__'):
+            select_related = (select_related,)
 
-        if isinstance(self.select_related, tuple):
-            return self.select_related
-        return ()
+        return select_related
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -128,12 +125,11 @@ class BaseViewSet(GenericViewSet):
         if classes is None:
             classes = []
 
-        if not isinstance(classes, list) and issubclass(type(classes), BasePermission):
+        if issubclass(type(classes), BasePermission):
             classes = [classes]
 
         for permission in classes:
-            if issubclass(type(permission), BasePermission) or issubclass(type(permission), BasePermissionMetaclass):
-                permissions.append(permission if not inspect.isclass(permission) else permission())  # noqa
+            permissions.append(permission() if callable(permission) else permission)
 
         return permissions
 
@@ -161,6 +157,11 @@ class BaseViewSet(GenericViewSet):
         kwargs['context'] = self.get_serializer_context()
         return serializer_class(*args, **kwargs)
 
+    def get_serializer_list(self, *args, **kwargs):
+        serializer_class = self.get_serializer_list_class()
+        kwargs['context'] = self.get_serializer_context()
+        return serializer_class(*args, **kwargs)
+
     def get_query_serializer(self):
         if self.action == ['retrieve', 'post', 'patch']:
             return None
@@ -171,6 +172,9 @@ class BaseViewSet(GenericViewSet):
 
     def get_serializer_retrieve_class(self):
         return self.get_serializer_by_action() or self.serializer_retrieve_class or self.serializer_class
+
+    def get_serializer_list_class(self):
+        return self.get_serializer_by_action() or self.serializer_list_class or self.serializer_class
 
     def get_object_id(self):
         return self.kwargs.get(self.lookup_field)
@@ -183,19 +187,9 @@ class BaseListModelMixin:
     ordering_fields = '__all__'
     ordering = ['-id']
 
-    """
-    List a queryset.
-    """
-
     def __init__(self, **kwargs):
-        is_filter_class_set = False
-
-        # Class has filter_class set , check if value is not None
-        if hasattr(self, 'filter_class') and getattr(self, 'filter_class', None):
-            is_filter_class_set = True
-
         # Automatically create a filter class for available filter set fields
-        if not is_filter_class_set and hasattr(self, 'filterset_fields'):
+        if not getattr(self, 'filter_class', None) and hasattr(self, 'filterset_fields'):
             # Dynamic filter classes
             namespace = self.queryset.model.__name__  # noqa
             self.filter_class = type(f'{namespace}FilterClass', (FilterSet,), {
@@ -212,19 +206,27 @@ class BaseListModelMixin:
 
         page = self.paginate_queryset(queryset)  # noqa
         if page is not None:
-            serializer = self.get_serializer_retrieve(page, many=True)  # noqa
+            serializer = self.get_serializer_list(page, many=True)  # noqa
             return self.get_paginated_response(serializer.data)  # noqa
 
-        serializer = self.get_serializer_retrieve(queryset, many=True)  # noqa
+        serializer = self.get_serializer_list(queryset, many=True)  # noqa
         return Response(serializer.data)
 
 
-class BaseReadOnlyViewSet(BaseListModelMixin, mixins.RetrieveModelMixin, BaseViewSet):
+class BaseRetrieveModelMixin:
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()  # noqa
+        serializer = self.get_serializer_retrieve(instance)  # noqa
+        return Response(serializer.data)
+
+
+class BaseReadOnlyViewSet(BaseListModelMixin, BaseRetrieveModelMixin, BaseViewSet):
     pass
 
 
 class BaseModelItemViewSet(
-    mixins.RetrieveModelMixin,
+    BaseRetrieveModelMixin,
     mixins.DestroyModelMixin,
     BaseCreateModelMixin,
     BaseUpdateModelMixin,
