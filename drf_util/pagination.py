@@ -1,3 +1,4 @@
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -17,3 +18,19 @@ class CustomPagination(PageNumberPagination):
             current_page=int(self.request.GET.get('page', DEFAULT_PAGE)), results=data
         )
         return Response(custom_paginator)
+
+    @property
+    def count(self):
+        paginator = getattr(self.page, 'paginator', None)
+        return paginator.count if paginator else None
+
+    @property
+    def num_pages(self):
+        paginator = getattr(self.page, 'paginator', None)
+        return paginator.num_pages if paginator else None
+
+    def paginate_queryset(self, *args, **kwargs):
+        try:
+            return super().paginate_queryset(*args, **kwargs)
+        except NotFound as e:
+            return list()

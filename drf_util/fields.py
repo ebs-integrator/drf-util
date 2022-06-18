@@ -16,6 +16,9 @@ class ManyRelatedField(relations.ManyRelatedField):
         if not self.allow_empty and len(data) == 0:
             self.fail('empty')
 
+        if self.allow_null:
+            data = list(filter(lambda item: item is not None, data))
+
         items = list(self.child_relation.get_queryset().filter(pk__in=data))
         if len(items) != len(data):
             items_ids = [item.id for item in items]
@@ -42,6 +45,6 @@ class PrimaryKeyRelatedField(relations.PrimaryKeyRelatedField):
     def many_init(cls, *args, **kwargs):
         list_kwargs = {'child_relation': cls(*args, **kwargs)}
         for key in kwargs:
-            if key in relations.MANY_RELATION_KWARGS:
+            if key in [*relations.MANY_RELATION_KWARGS, 'allow_null']:
                 list_kwargs[key] = kwargs[key]
         return ManyRelatedField(**list_kwargs)

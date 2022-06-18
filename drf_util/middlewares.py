@@ -9,7 +9,9 @@ class PrintSQlMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        if settings.DEBUG and settings.DEBUG_LEVEL.lower() == 'debug':
+
+        debug_level = getattr(settings, 'DEBUG_LEVEL', None)
+        if settings.DEBUG and debug_level and debug_level.lower() == 'debug':
             from django.db import connection
             count = 0
             total_time = float()
