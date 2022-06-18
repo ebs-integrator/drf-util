@@ -218,25 +218,44 @@ def get_applications(base_folder='apps', inside_file='', only_directory=True, jo
     return apps
 
 
-def add_related(queryset, serializer) -> QuerySet:
+def get_related(serializer, model=None, upper_field='', deep=3):
     select_related = []
     prefetch_related = []
 
     if not isinstance(serializer, Serializer):
         serializer = serializer()
 
+    if not model:
+        serializer_meta = getattr(serializer, 'Meta', None)
+        model = getattr(serializer_meta, 'model', None)
+
     for field_name, field_data in serializer.fields.items():
         field_name = getattr(field_data, 'source', field_data)
-        field = gt(queryset.model, field_data.source, None)
+        if upper_field:
+            field_name = '__'.join((upper_field, field_name))
+
+        field = gt(model, field_data.source, None)
+
         if not field or not hasattr(field, 'field'):
             continue
 
         if isinstance(field.field, (ForeignKey, ManyToManyField)):
+            if isinstance(field_data, Serializer):
+                _prefetch_related, _select_related = get_related(field_data, model='', upper_field=field_name,
+                                                                 deep=deep - 1)
+                prefetch_related += _prefetch_related
+                select_related += _select_related
+
             if hasattr(field, 'rel'):
                 prefetch_related.append(field_name)
             else:
                 select_related.append(field_name)
 
+    return prefetch_related, select_related
+
+
+def add_related(queryset, serializer, deep=1) -> QuerySet:
+    prefetch_related, select_related = get_related(serializer, deep=deep)
     return queryset.select_related(*select_related).prefetch_related(*prefetch_related)
 
 
