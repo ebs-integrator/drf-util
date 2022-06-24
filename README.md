@@ -553,5 +553,66 @@ urlpatterns = [
 ```
 
 
+### Lookups
+#### Like
 
+Usage:
+
+```python
+queryset = User.objects.filter(first_name__like='%ia').values('first_name')
+
+# SQL: SELECT name FROM users WHERE name LIKE '%ia';
+# queryset: <QuerySet [{'first_name': 'Olivia'}, {'first_name': 'Amelia'}, '...(remaining elements truncated)...']>
+```
+
+
+#### Not
+
+
+Usage:
+
+```python
+queryset = queryset.objects.filter(first_name__not='Doe').values_list('first_name', flat=True)
+
+# SQL: SELECT name FROM users WHERE NOT name = 'Doe';
+# queryset: <QuerySet [{'first_name': 'Not Doe'}, {'first_name': 'Realy not Doe'}, '...(remaining elements truncated)...']>
+```
+
+#### Distinct
+
+Usage:
+
+```python
+queryset = queryset.objects.filter(first_name__distinct='Doe').values_list('first_name', flat=True)
+
+# SQL: SELECT name FROM users WHERE NOT name IS DISTINCT FROM 'Doe';
+# queryset: <QuerySet [{'first_name': 'Not Doe'}, {'first_name': 'Realy not Doe'}, '...(remaining elements truncated)...']>
+```
+
+### Exceptions
+#### FailedDependency
+
+Usage:
+
+```python
+response = request.get(url)
+
+if not response.ok:
+    raise FailedDependency(response.content)
+
+# Status code: 424
+```
+
+#### IMATeapot
+
+Usage:
+
+```python
+try:
+    number = 13 / 0
+except Exception:
+    raise IMATeapot()
+
+# Status code: 418
+```
 
