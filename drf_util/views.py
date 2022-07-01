@@ -79,6 +79,7 @@ class BaseViewSet(GenericViewSet):
     prefetch_related = ()
     select_related = ()
     autocomplete_related = True
+    autocomplete_related_deep = 1
 
     def get_prefetch_related(self):
         prefetch_related = self.prefetch_related
@@ -100,7 +101,7 @@ class BaseViewSet(GenericViewSet):
 
         queryset = super().get_queryset()
         if self.serializer_class and callable(self.get_serializer_class()) and self.autocomplete_related:
-            queryset = add_related(queryset, self.get_serializer())
+            queryset = add_related(queryset, self.get_serializer(), deep=self.autocomplete_related_deep)
 
         # Fetch specified relations
         if not self.autocomplete_related:

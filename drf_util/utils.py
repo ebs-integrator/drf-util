@@ -40,6 +40,36 @@ def dict_merge(a, b, path=None):
     return a
 
 
+def dict_diff(a, b):
+    data_a = {}
+    data_b = {}
+
+    for key in a:
+        a_value = a.get(key)
+        b_value = b.get(key)
+        if isinstance(a_value, dict) and isinstance(b_value, dict):
+            a_value, b_value = dict_diff(a_value, b_value)
+
+        if a_value != b_value:
+            data_a[key] = a_value
+            data_b[key] = b_value
+
+    return data_a, data_b
+
+
+def dict_normalise(data: dict, separator='__') -> dict:
+    new_dict = {}
+
+    for key, value in data.items():
+        if isinstance(value, dict):
+            for embedded_key, embedded_value in dict_normalise(value, separator).items():
+                new_dict.update({separator.join((key, embedded_key)): embedded_value})
+        else:
+            new_dict.update({key: value})
+
+    return new_dict
+
+
 def gt(obj: object, path: str, default: Any = None, sep: str = '.') -> Any:
     """
     Function that extracts the value from the specified path in obj and returns default if nothing found
@@ -197,7 +227,7 @@ def any_value(items: list):
             return item
 
 
-def iterate_query(queryset, offset_field, offset_start, limit=100):
+def iterate_query(queryset, offset_field='pk', offset_start=0, limit=100):
     while True:
         object_list = list(queryset.filter(**{offset_field + "__gt": offset_start}).order_by(offset_field)[:limit])
         if not len(object_list):
@@ -221,25 +251,43 @@ def get_applications(base_folder='apps', inside_file='', only_directory=True, jo
     return apps
 
 
-def add_related(queryset, serializer) -> QuerySet:
-    select_related = []
-    prefetch_related = []
+def get_related(serializer, model=None, upper_field='', deep=3):
+    prefetch_related, select_related = [], []
 
     if not isinstance(serializer, Serializer):
         serializer = serializer()
 
+    if not model:
+        serializer_meta = getattr(serializer, 'Meta', None)
+        model = getattr(serializer_meta, 'model', None)
+
     for field_name, field_data in serializer.fields.items():
         field_name = getattr(field_data, 'source', field_data)
-        field = gt(queryset.model, field_data.source, None)
+        if upper_field:
+            field_name = '__'.join((upper_field, field_name))
+
+        field = gt(model, field_data.source, None)
+
         if not field or not hasattr(field, 'field'):
             continue
 
         if isinstance(field.field, (ForeignKey, ManyToManyField)):
+            if isinstance(field_data, Serializer) and deep > 1:
+                _prefetch_related, _select_related = get_related(field_data, model='', upper_field=field_name,
+                                                                 deep=deep - 1)
+                prefetch_related += _prefetch_related
+                select_related += _select_related
+
             if hasattr(field, 'rel'):
                 prefetch_related.append(field_name)
             else:
                 select_related.append(field_name)
 
+    return prefetch_related, select_related
+
+
+def add_related(queryset, serializer, deep=3) -> QuerySet:
+    prefetch_related, select_related = get_related(serializer, deep=deep)
     return queryset.select_related(*select_related).prefetch_related(*prefetch_related)
 
 

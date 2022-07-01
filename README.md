@@ -100,7 +100,7 @@ Usage:
 Definition:
 
 ```python
-iterate_query(queryset, offset_field, offset_start, limit=100)
+iterate_query(queryset, offset_field='pk', offset_start=0, limit=100)
 ```
 
 Usage:
@@ -160,6 +160,32 @@ Usage:
 queryset = add_related(Thing.objects.all(), ThingSerializer)
 ```
 
+
+#### Compare dicts 
+Definition:
+```python
+dict_diff(a, b)
+```
+
+Usage:
+```python
+>>> dict_diff({'a': 2, 'b': {'c': 2, 'd': 1}}, {'b': {'c': 3, 'd': 1}})
+({'a': 2, 'b': {'c': 2}}, {'a': None, 'b': {'c': 3}})
+```
+
+
+#### Tighten dicts 
+Definition:
+```python
+dict_normalise(data, separator='__')
+```
+
+Usage:
+```python
+>>> dict_normalise({'a': 1, 'b': {'c': 2, 'd': {'e': 3, 'f': 3}}})
+{'a': 1, 'b__c': 2, 'b__d__e': 3, 'b__d__f': 3}
+```
+
 ### Decorators
 
 ##### serialize_decorator
@@ -203,6 +229,38 @@ def simple_print(text):
 ### Managers
 
 - NoDeleteManager
+- BaseManager
+
+#### BaseManager
+
+Features:
+
+- fetch_only_annotation - make annotation only on iteration
+
+Simple annotation:
+```python
+queryset = User.objects.annotate(
+    contacts_count=Count('contacts')
+)
+
+print(queryset.count())
+# SELECT COUNT(*) from users join contacts on contacts.owner = user.id;
+
+print(queryset.first())
+# SELECT *, COUNT(contacts) as contacts_count from users join contacts on contacts.owner = user.id;
+```
+
+```python
+queryset = User.objects.fetch_only_annotation(
+    contacts_count=Count('contacts')
+)
+
+print(queryset.count())
+# SELECT COUNT(*) from users;
+
+print(queryset.first())
+# SELECT *, COUNT(contacts) as contacts_count from users join contacts on contacts.owner = user.id;
+```
 
 ### Models
 
@@ -553,5 +611,116 @@ urlpatterns = [
 ```
 
 
+### Lookups
+#### Like
 
+Usage:
+
+```python
+queryset = User.objects.filter(first_name__like='%ia').values('first_name')
+
+# SQL: SELECT name FROM users WHERE name LIKE '%ia';
+# queryset: <QuerySet [{'first_name': 'Olivia'}, {'first_name': 'Amelia'}, '...(remaining elements truncated)...']>
+```
+
+
+#### Not
+
+
+Usage:
+
+```python
+queryset = queryset.objects.filter(first_name__not='Doe').values_list('first_name', flat=True)
+
+# SQL: SELECT name FROM users WHERE NOT name = 'Doe';
+# queryset: <QuerySet [{'first_name': 'Not Doe'}, {'first_name': 'Realy not Doe'}, '...(remaining elements truncated)...']>
+```
+
+#### Distinct
+
+Usage:
+
+```python
+queryset = queryset.objects.filter(first_name__distinct='Doe').values_list('first_name', flat=True)
+
+# SQL: SELECT name FROM users WHERE NOT name IS DISTINCT FROM 'Doe';
+# queryset: <QuerySet [{'first_name': 'Not Doe'}, {'first_name': 'Realy not Doe'}, '...(remaining elements truncated)...']>
+```
+
+
+### Functions
+#### StringToArr
+
+Usage:
+
+```python
+queryset = User.objects.annotate(split_name=StringToArr('name', Value(' ')).values('name', 'split_name')
+
+# SQL: SELECT name FROM users WHERE name LIKE '%ia';
+# queryset: <QuerySet [{'name': 'Olivia Marchel', 'split_name': ['Olivia', 'Marchel']}, {'name': 'Amelia Hust', 'split_name': ['Amelia', 'Hust']}, '...(remaining elements truncated)...']>
+```
+
+#### ArrIntersection
+
+Usage:
+
+```python
+queryset = User.objects.annotate(teams_intersection=ArrIntersection('featured_teams', 'teams')).values('featured_teams', 'teams', 'teams_intersection')
+
+# SQL: SELECT name FROM users WHERE name LIKE '%ia';
+# queryset: <QuerySet [{'featured_teams': ['Team1', 'Team2'], 'teams': ['Team1', 'Team3'], 'teams_intersection': ['Team1']}, {'featured_teams': ['Team1', 'Team2'], 'teams': ['Team3', 'Team4'], 'teams_intersection': []}, '...(remaining elements truncated)...']>
+```
+
+#### ArrayLength
+
+Usage:
+
+```python
+queryset = User.objects.annotate(tokens_count=ArrayLength('tokens')).values('tokens', 'tokens_count')
+
+# SQL: SELECT name FROM users WHERE name LIKE '%ia';
+# queryset: <QuerySet [{'tokens': ['tok1', 'tok2'], 'tokens_count': 2}, {'tokens': [], 'tokens_count': 0}, '...(remaining elements truncated)...']>
+```
+
+
+### Exceptions
+#### ValidationException
+
+Usage:
+
+```python
+value = -3
+
+if value < 0:
+    raise ValidationException("Invalid value.")
+
+# Status code: 400
+# Body: {"detail": "Invalid value."} 
+```
+
+#### FailedDependency
+
+Usage:
+
+```python
+response = request.get(url)
+
+if not response.ok:
+    raise FailedDependency(response.content)
+
+# Status code: 424
+```
+
+#### IMATeapot
+
+Usage:
+
+```python
+try:
+    number = 13 / 0
+except Exception:
+    raise IMATeapot()
+
+# Status code: 418
+```
 
