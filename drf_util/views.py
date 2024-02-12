@@ -114,7 +114,11 @@ class BaseViewSet(GenericViewSet):
         return queryset
 
     def get_serializer_by_action(self):
-        return self.serializer_by_action.get(self.action)
+        default_actions = ('list', 'retrieve', 'create')
+
+        default_serializers = {action: getattr(self, f'serializer_{action}_class', None) for action in default_actions}
+
+        return default_serializers.get(self.action) or self.serializer_by_action.get(self.action)
 
     def get_serializer_class(self):
         return self.get_serializer_by_action() or super().get_serializer_class()
