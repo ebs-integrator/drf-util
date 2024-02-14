@@ -114,7 +114,8 @@ class BaseViewSet(GenericViewSet):
         return queryset
 
     def get_serializer_by_action(self):
-        return getattr(self, f'serializer_{self.action}_class') or self.serializer_by_action.get(self.action)
+        return self.serializer_by_action.get(self.action) or getattr(self, f'serializer_{self.action}_class') \
+            if self.action in ['list', 'retrieve'] else None
 
     def get_serializer_class(self):
         return self.get_serializer_by_action() or super().get_serializer_class()
